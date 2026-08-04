@@ -140,7 +140,8 @@ app.post('/api/admin/login', (req, res) => {
 // Get configuration settings (e.g. LIFF ID)
 app.get('/api/config', (req, res) => {
   res.json({
-    liffId: process.env.LIFF_ID || 'MOCK_LIFF_ID'
+    liffId: process.env.LIFF_ID || 'MOCK_LIFF_ID',
+    promptPayNumber: process.env.PROMPTPAY_NUMBER || '0812345678'
   });
 });
 
@@ -150,26 +151,28 @@ app.post('/api/customers', async (req, res) => {
     const { id, displayName, pictureUrl } = req.body;
     if (!id) return res.status(400).json({ error: 'Missing customer ID' });
 
-    const existing = await dbQuery.get('SELECT id, points FROM customers WHERE id = ?', [id]);
+    const existing = await dbQuery.get('SELECT id, points, couponCount FROM customers WHERE id = ?', [id]);
     const now = new Date().toISOString();
     let currentPoints = 0;
+    let couponCount = 0;
 
     if (existing) {
       currentPoints = existing.points;
+      couponCount = existing.couponCount || 0;
       await dbQuery.run(
         'UPDATE customers SET displayName = ?, pictureUrl = ? WHERE id = ?',
         [displayName, pictureUrl, id]
       );
-      console.log(`Updated customer profile: ${displayName} (${id}) - Points: ${currentPoints}`);
+      console.log(`Updated customer profile: ${displayName} (${id}) - Points: ${currentPoints}, Coupons: ${couponCount}`);
     } else {
       await dbQuery.run(
-        'INSERT INTO customers (id, displayName, pictureUrl, points, createdAt) VALUES (?, ?, ?, ?, ?)',
-        [id, displayName, pictureUrl, 0, now]
+        'INSERT INTO customers (id, displayName, pictureUrl, points, couponCount, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, displayName, pictureUrl, 0, 0, now]
       );
       console.log(`Created new customer profile: ${displayName} (${id})`);
     }
 
-    res.json({ success: true, points: currentPoints });
+    res.json({ success: true, points: currentPoints, couponCount });
   } catch (error) {
     console.error('Error in POST /api/customers:', error);
     res.status(500).json({ error: error.message });
@@ -223,7 +226,7 @@ app.get('/api/orders', verifyAdminToken, async (req, res) => {
 // Create a new order (with multiple items)
 app.post('/api/orders', async (req, res) => {
   try {
-    const { customerId, latitude, longitude, deliveryDateTime, items, deliveryMethod, paymentMethod } = req.body;
+    const { customerId, latitude, longitude, deliveryDateTime, items, deliveryMethod, paymentMethod, useCoupon } = req.body;
 
     if (!customerId || !deliveryDateTime || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Missing required order fields or items array' });
@@ -260,6 +263,21 @@ app.post('/api/orders', async (req, res) => {
     if (totalCount >= 50) {
       discountApplied = Math.round(totalPrice * 0.20 * 100) / 100;
       totalPrice = Math.max(0, totalPrice - discountApplied);
+    }
+
+    // Apply Coupon discount if checked and user has active coupons
+    if (useCoupon) {
+      const customer = await dbQuery.get('SELECT couponCount FROM customers WHERE id = ?', [customerId]);
+      if (customer && customer.couponCount > 0) {
+        // Deduct 1 coupon from user balance
+        const newCouponCount = customer.couponCount - 1;
+        await dbQuery.run('UPDATE customers SET couponCount = ? WHERE id = ?', [newCouponCount, customerId]);
+        
+        // Add 100 Baht discount
+        discountApplied += 100;
+        totalPrice = Math.max(0, totalPrice - 100);
+        console.log(`Applied 100 Baht discount coupon for customer ${customerId}. Unused coupons left: ${newCouponCount}`);
+      }
     }
 
     // Insert Order Parent
@@ -420,9 +438,9 @@ app.delete('/api/orders/:id', verifyAdminToken, async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // If deleting a delivered order, subtract the points earned from the customer
+    // If deleting a delivered order, subtract the points earned from the customer (cap at 0)
     if (order.status === 'delivered' && order.pointsEarned > 0) {
-      await dbQuery.run('UPDATE customers SET points = points - ? WHERE id = ?', [order.pointsEarned, order.customerId]);
+      await dbQuery.run('UPDATE customers SET points = max(0, points - ?) WHERE id = ?', [order.pointsEarned, order.customerId]);
       console.log(`Subtracted ${order.pointsEarned} loyalty stamps from customer ${order.customerId} due to deletion of Delivered Order ${id}`);
     }
 
@@ -441,7 +459,7 @@ app.delete('/api/orders/:id', verifyAdminToken, async (req, res) => {
 app.post('/api/customers/:id/redeem', async (req, res) => {
   try {
     const { id } = req.params;
-    const customer = await dbQuery.get('SELECT points, displayName FROM customers WHERE id = ?', [id]);
+    const customer = await dbQuery.get('SELECT points, displayName, couponCount FROM customers WHERE id = ?', [id]);
     if (!customer) {
       return res.status(404).json({ error: 'Customer not found' });
     }
@@ -451,8 +469,9 @@ app.post('/api/customers/:id/redeem', async (req, res) => {
     }
 
     const newPoints = customer.points - 10;
-    await dbQuery.run('UPDATE customers SET points = ? WHERE id = ?', [newPoints, id]);
-    console.log(`Redeemed coupon for customer ${customer.displayName} (${id}). Remaining stamps: ${newPoints}`);
+    const newCouponCount = (customer.couponCount || 0) + 1;
+    await dbQuery.run('UPDATE customers SET points = ?, couponCount = ? WHERE id = ?', [newPoints, newCouponCount, id]);
+    console.log(`Redeemed coupon for customer ${customer.displayName} (${id}). Remaining stamps: ${newPoints}, Coupons: ${newCouponCount}`);
 
     // Send congratulations push message
     try {
@@ -468,7 +487,7 @@ app.post('/api/customers/:id/redeem', async (req, res) => {
       console.error('Error sending redeem notification:', e);
     }
 
-    res.json({ success: true, points: newPoints });
+    res.json({ success: true, points: newPoints, couponCount: newCouponCount });
   } catch (error) {
     console.error('Error in POST /api/customers/:id/redeem:', error);
     res.status(500).json({ error: error.message });
@@ -496,7 +515,7 @@ app.post('/api/broadcast', verifyAdminToken, async (req, res) => {
         }
         await lineClient.pushMessage(customer.id, {
           type: 'text',
-          text: `📢 ข่าวสาร & โปรโมชั่นพิเศษสุดคุ้มจากร้านซักรีด!\n\n${message}\n\n🧺 สอบถามเพิ่มเติมหรือจองคิวซักรีดผ่านเมนูด้านล่างได้เลยครับ`
+          text: `📢 ข่าวสาร & โปรโมชั่นพิเศษสุดคุ้มจาก Fitcheck Laundry!\n\n${message}\n\n🧺 สอบถามเพิ่มเติมหรือจองคิวซักรีดผ่านเมนูด้านล่างได้เลยครับ`
         });
         successCount++;
       } catch (err) {
@@ -530,7 +549,7 @@ async function handleLineEvent(event) {
       
       await lineClient.replyMessage(event.replyToken, {
         type: 'text',
-        text: `สวัสดีคุณ ${profile.displayName} ยินดีต้อนรับสู่ร้านซักรีดอัจฉริยะ! 🎉\nคุณสามารถกดปุ่มเมนูสั่งซักรีดได้ผ่านหน้าต่างแชทนี้เลยครับ`
+        text: `สวัสดีคุณ ${profile.displayName} ยินดีต้อนรับสู่ Fitcheck Laundry อัจฉริยะ! 🎉\nคุณสามารถกดปุ่มเมนูสั่งซักรีดได้ผ่านหน้าต่างแชทนี้เลยครับ`
       });
     } catch (err) {
       console.error('Error processing follow event:', err);

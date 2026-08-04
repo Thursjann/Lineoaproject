@@ -421,8 +421,8 @@
       border-radius: 12px;
       padding: 12px 16px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      align-items: stretch;
       margin-top: 16px;
       border-left: 4px solid var(--primary);
     }
@@ -450,6 +450,33 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-container {
+      background-color: #FFFFFF;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -471,7 +498,7 @@
           <div style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin: 4px 0; font-weight: 500;">
             🌟 แสตมป์สะสม: <span id="user-points">0</span> ดวง
           </div>
-          <div class="profile-status">ยินดีต้อนรับสู่ร้านซักรีดของเรา</div>
+          <div class="profile-status">ยินดีต้อนรับสู่ Fitcheck Laundry</div>
         </div>
       </div>
     </header>
@@ -534,9 +561,9 @@
       <!-- ==================================================== -->
       <section id="page-rates" class="page-section">
         <!-- Promotion banner cards -->
-        <div class="promo-banner">
-          <h3 style="font-weight: 700; font-size: 16px;">🌟 สิทธิพิเศษสมาชิกใหม่!</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">เข้าใช้งานระบบผ่าน LIFF วันนี้รับสิทธิ์สะสมแสตมป์ทันที สะสมครบแลกส่วนลด!</p>
+        <div class="promo-banner" style="background: linear-gradient(135deg, #E67E22, #F39C12);">
+          <h3 style="font-weight: 700; font-size: 16px;">🔥 โปรโมชั่นซักราคาส่ง/ราคาเหมา</h3>
+          <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">เมื่อส่งซักเสื้อผ้าตั้งแต่ 50 ชิ้นขึ้นไปใน 1 ออเดอร์ รับส่วนลดราคาส่งสุดพิเศษ 20% ทันที!</p>
         </div>
 
         <div class="promo-banner" style="background: linear-gradient(135deg, #8E44AD, #3498DB); margin-top: -10px;">
@@ -607,8 +634,8 @@
           <!-- 3.1 ที่อยู่ร้าน (แสดงเมื่อเลือก dropoff) -->
           <div class="form-group" id="shop-address-group" style="display: none;">
             <label class="form-label">ที่อยู่ร้านสำหรับนำมาส่ง</label>
-            <div style="background-color: #F8F9F9; border: 1.5px dashed var(--border); padding: 12px; border-radius: 12px; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-              <span>📍 <b>โรงซักรีด เสาชิงช้า</b>: แขวงเสาชิงช้า เขตพระนคร กรุงเทพฯ (เปิดทุกวัน 08:00 - 20:00)</span>
+            <div style="background-color: #F8F9F9; border: 1.5px dashed var(--border); padding: 12px; border-radius: 12px; font-size: 13px; color: var(--text-main); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;">
+              <span>📍 <b>Fitcheck Laundry (สาขาวัดมะขาม)</b><br>194 ซอยวัดมะขาม ต.บ้านกลาง อ.เมืองปทุมธานี จ.ปทุมธานี 12000<br>⏰ เปิดให้บริการ: 09:00 - 19:00 น. (ทุกวัน)</span>
             </div>
           </div>
 
@@ -630,6 +657,14 @@
           <div class="form-group">
             <label class="form-label" id="delivery-time-label" for="delivery-time">วันเวลาที่นัดเข้ารับผ้า</label>
             <input type="datetime-local" id="delivery-time" class="form-control" required>
+          </div>
+
+          <!-- Coupon Box -->
+          <div id="coupon-selection-container" style="margin-bottom: 16px; display: none;">
+            <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1.5px dashed #F1C40F; border-radius: 12px; background: #FEF9E7; cursor: pointer; font-size:13px; font-weight:600; color:#7E5109; margin: 0; width: 100%; box-sizing: border-box;">
+              <input type="checkbox" id="use-coupon-checkbox" onchange="calculateEstimate()" style="width:18px; height:18px; accent-color:#F1C40F; margin: 0;">
+              <span>🎁 ใช้คูปองส่วนลด 100 บาท (มีคูปองสะสม: <span id="owned-coupons-count">0</span> ใบ)</span>
+            </label>
           </div>
 
           <div class="cost-summary">
@@ -662,6 +697,35 @@
       </div>
     </div>
 
+  <!-- Payment QR Code Modal (Shown after successful transfer order submission) -->
+  <div id="payment-modal" class="modal-overlay">
+    <div class="modal-container">
+      <h3 style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 2px;">สแกนเพื่อชำระเงิน</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">กรุณาสแกน QR Code นี้ผ่านแอปธนาคารของท่านเพื่อชำระเงิน</p>
+      
+      <!-- PromptPay QR Code Container -->
+      <div style="background: white; padding: 12px; border: 1px solid var(--border); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <img id="payment-qr" src="" alt="PromptPay QR Code" style="width: 200px; height: 200px; display: block; object-fit: contain;">
+      </div>
+      
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-main); margin-top: 8px;">
+        <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--border); padding-bottom:4px;">
+          <span>ช่องทาง:</span>
+          <b>พร้อมเพย์ (PromptPay)</b>
+        </div>
+        <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--border); padding-bottom:4px;">
+          <span>ยอดโอนเงิน:</span>
+          <b style="color:var(--primary); font-size:15px;" id="payment-amount">฿ 0.00</b>
+        </div>
+        <div style="font-size:11px; color:#E67E22; margin-top:6px; font-weight: 500; text-align: center; line-height: 1.4;">
+          💡 โอนเงินเสร็จแล้ว กรุณาส่งรูปสลิปหลักฐานการโอนเข้ามาในแชท LINE นี้ได้เลยครับ
+        </div>
+      </div>
+      
+      <button type="button" class="btn btn-primary" onclick="closePaymentModal()" style="width: 100%; margin-top: 10px;">
+        ตกลง และปิดหน้านี้
+      </button>
+    </div>
   </div>
 
   <!-- LINE LIFF SDK -->

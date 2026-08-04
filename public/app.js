@@ -1,6 +1,7 @@
 // LIFF Customer App Logic - Reusable Loyality and e-Stamp Architecture
 let userProfile = null;
 let serviceRates = [];
+let promptPayNumber = '0812345678';
 
 // DOM Elements
 const loadingIndicator = document.getElementById('loading-indicator');
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (configRes && configRes.ok) {
       const configData = await configRes.json();
       liffId = configData.liffId;
+      promptPayNumber = configData.promptPayNumber || '0812345678';
     }
 
     if (liffId && liffId !== 'YOUR_LIFF_ID' && liffId !== 'MOCK_LIFF_ID') {
@@ -83,6 +85,7 @@ async function handleLiffLogin() {
     const userPoints = result.points || 0;
     document.getElementById('user-points').innerText = userPoints;
     renderStampCard(userPoints);
+    updateCouponUI(result.couponCount);
 
     hideLoading();
     loadUserOrders();
@@ -121,6 +124,7 @@ function initializeMockMode() {
     const userPoints = result.points || 0;
     document.getElementById('user-points').innerText = userPoints;
     renderStampCard(userPoints);
+    updateCouponUI(result.couponCount);
 
     hideLoading();
     loadUserOrders();
@@ -150,6 +154,23 @@ function simulateLogin() {
 
 function hideLoading() {
   loadingIndicator.style.display = 'none';
+}
+
+function updateCouponUI(couponCount) {
+  if (userProfile) {
+    userProfile.couponCount = couponCount || 0;
+  }
+  const couponContainer = document.getElementById('coupon-selection-container');
+  const couponsCountEl = document.getElementById('owned-coupons-count');
+  
+  if (couponCount > 0) {
+    if (couponsCountEl) couponsCountEl.innerText = couponCount;
+    if (couponContainer) couponContainer.style.display = 'block';
+  } else {
+    if (couponContainer) couponContainer.style.display = 'none';
+    const checkbox = document.getElementById('use-coupon-checkbox');
+    if (checkbox) checkbox.checked = false;
+  }
 }
 
 function showLoading(text) {
@@ -226,6 +247,7 @@ window.handleStampRedemption = async function() {
       // Update UI with new points balance
       document.getElementById('user-points').innerText = data.points;
       renderStampCard(data.points);
+      updateCouponUI(data.couponCount);
     } else {
       alert(`ล้มเหลว: ${data.error || 'เกิดข้อผิดพลาดในการแลกแสตมป์'}`);
     }
@@ -399,52 +421,87 @@ window.calculateEstimate = function() {
   });
 
   const costDetailItems = document.getElementById('cost-detail-items');
-  let discount = 0;
-  
+  const useCouponCheckbox = document.getElementById('use-coupon-checkbox');
+  const useCoupon = useCouponCheckbox && useCouponCheckbox.checked;
+
+  let wholesaleDiscount = 0;
   if (totalCount >= 50) {
-    discount = Math.round(subtotal * 0.20 * 100) / 100;
-    const finalTotal = Math.max(0, subtotal - discount);
-    
-    if (costDetailItems) {
-      costDetailItems.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2px;">
-          <span>จำนวนผ้ารวม:</span>
-          <span>${totalCount} ชิ้น</span>
-        </div>
+    wholesaleDiscount = Math.round(subtotal * 0.20 * 100) / 100;
+  }
+
+  let couponDiscount = 0;
+  if (useCoupon) {
+    couponDiscount = 100;
+  }
+
+  const finalTotal = Math.max(0, subtotal - wholesaleDiscount - couponDiscount);
+
+  if (costDetailItems) {
+    let html = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2px;">
+        <span>จำนวนผ้ารวม:</span>
+        <span>${totalCount} ชิ้น</span>
+      </div>
+    `;
+
+    if (wholesaleDiscount > 0 || couponDiscount > 0) {
+      html += `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2px;">
           <span>ราคาปกติ:</span>
           <span>฿ ${subtotal.toFixed(2)}</span>
         </div>
+      `;
+    }
+
+    if (wholesaleDiscount > 0) {
+      html += `
         <div style="display:flex; justify-content:space-between; align-items:center; color:#E74C3C; font-weight:600; margin-bottom: 2px;">
           <span>ส่วนลดราคาส่ง (20%):</span>
-          <span>- ฿ ${discount.toFixed(2)}</span>
+          <span>- ฿ ${wholesaleDiscount.toFixed(2)}</span>
         </div>
+      `;
+    }
+
+    if (couponDiscount > 0) {
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; color:#E74C3C; font-weight:600; margin-bottom: 2px;">
+          <span>คูปองส่วนลดสมาชิก:</span>
+          <span>- ฿ ${couponDiscount.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
+    if (totalCount >= 30 && totalCount < 50) {
+      html += `
+        <div style="font-size:11px; color:#E67E22; text-align:right; margin-top:4px;">
+          💡 อีก ${50 - totalCount} ชิ้น จะได้รับส่วนลดราคาส่ง 20%
+        </div>
+      `;
+    } else if (totalCount >= 50) {
+      html += `
         <div style="font-size:11px; color:#1E8449; font-weight:600; text-align:right; margin-top:2px;">
           🎉 พิเศษ! ซักผ้าครบ 50 ชิ้น ได้ส่วนลดราคาส่ง 20%
         </div>
       `;
     }
-    costDisplay.innerText = `฿ ${finalTotal.toFixed(2)}`;
-  } else {
-    if (costDetailItems) {
-      costDetailItems.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>จำนวนผ้ารวม:</span>
-          <span>${totalCount} ชิ้น</span>
-        </div>
-        ${totalCount > 0 && totalCount < 50 ? `
-        <div style="font-size:11px; color:#E67E22; text-align:right; margin-top:4px;">
-          💡 อีก ${50 - totalCount} ชิ้น จะได้รับส่วนลดราคาส่ง 20%
-        </div>` : ''}
-      `;
-    }
-    costDisplay.innerText = `฿ ${subtotal.toFixed(2)}`;
+
+    costDetailItems.innerHTML = html;
   }
+
+  costDisplay.innerText = `฿ ${finalTotal.toFixed(2)}`;
 };
 
 function setupDefaultDeliveryTime() {
   const now = new Date();
   now.setHours(now.getHours() + 2);
+  
+  const currentHour = now.getHours();
+  if (currentHour < 9) {
+    now.setHours(9, 0, 0, 0);
+  } else if (currentHour >= 19) {
+    now.setDate(now.getDate() + 1);
+    now.setHours(9, 0, 0, 0);
+  }
   
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -516,6 +573,9 @@ async function handleOrderSubmit(e) {
     return;
   }
 
+  const useCouponCheckbox = document.getElementById('use-coupon-checkbox');
+  const useCoupon = useCouponCheckbox && useCouponCheckbox.checked;
+
   const payload = {
     customerId: userProfile.id,
     latitude: deliveryMethod === 'pickup' ? parseFloat(latitudeInput.value) : null,
@@ -523,8 +583,19 @@ async function handleOrderSubmit(e) {
     deliveryDateTime: deliveryTimeInput.value,
     deliveryMethod: deliveryMethod,
     paymentMethod: paymentMethod,
+    useCoupon: useCoupon,
     items: items
   };
+
+  const selectedDate = new Date(deliveryTimeInput.value);
+  const selectedHour = selectedDate.getHours();
+  const selectedMin = selectedDate.getMinutes();
+  const mins = selectedHour * 60 + selectedMin;
+  
+  if (mins < 540 || mins > 1140) {
+    alert('⚠️ ขออภัยค่ะ Fitcheck Laundry เปิดให้บริการรับ-ส่งผ้าเฉพาะเวลา 09:00 - 19:00 น. เท่านั้น กรุณาเลือกเวลาใหม่ด้วยค่ะ');
+    return;
+  }
 
   showLoading('กำลังส่งใบจองบริการซักรีด...');
 
@@ -540,7 +611,6 @@ async function handleOrderSubmit(e) {
     const result = await res.json();
     
     if (res.ok && result.success) {
-      alert('จองบริการคิวซักรีดสำเร็จเรียบร้อยแล้ว!');
       setupDefaultDeliveryTime();
       latitudeInput.value = '';
       longitudeInput.value = '';
@@ -552,6 +622,16 @@ async function handleOrderSubmit(e) {
       toggleDeliveryMethod({ value: 'pickup' });
       document.querySelector('input[name="payment-method"][value="cash"]').checked = true;
       
+      if (useCouponCheckbox) {
+        useCouponCheckbox.checked = false;
+      }
+      
+      // Update local coupons count
+      if (useCoupon) {
+        userProfile.couponCount = Math.max(0, (userProfile.couponCount || 0) - 1);
+      }
+      updateCouponUI(userProfile.couponCount);
+
       checkboxes.forEach(cb => {
         cb.checked = false;
         toggleServiceQty(cb);
@@ -559,6 +639,15 @@ async function handleOrderSubmit(e) {
       
       await loadUserOrders();
       navigateToTab('page-home');
+
+      // If bank transfer is chosen, show the payment QR code modal
+      if (paymentMethod === 'transfer') {
+        document.getElementById('payment-qr').src = `https://promptpay.io/${promptPayNumber}/${result.totalPrice}.png`;
+        document.getElementById('payment-amount').innerText = `฿ ${result.totalPrice.toFixed(2)}`;
+        document.getElementById('payment-modal').style.display = 'flex';
+      } else {
+        alert('จองบริการคิวซักรีดสำเร็จเรียบร้อยแล้ว!');
+      }
     } else {
       alert(`ล้มเหลว: ${result.error || 'เกิดข้อผิดพลาดในการทำรายการ'}`);
     }
@@ -659,3 +748,7 @@ async function loadUserOrders() {
     `;
   }
 }
+
+window.closePaymentModal = function() {
+  document.getElementById('payment-modal').style.display = 'none';
+};

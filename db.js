@@ -62,6 +62,7 @@ async function initDatabase() {
         displayName TEXT,
         pictureUrl TEXT,
         points INTEGER DEFAULT 0,
+        couponCount INTEGER DEFAULT 0,
         createdAt TEXT NOT NULL
       )
     `);
