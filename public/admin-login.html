@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - LINE Laundry OA</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #8E44AD;
+      --secondary: #3498DB;
+      --dark: #1E1E2F;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --text: #2C3E50;
+      --text-muted: #7F8C8D;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Prompt', 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--dark) 0%, #2c1a3b 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 40px 30px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .logo-area {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      margin: 0 auto 20px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 32px;
+      box-shadow: 0 8px 16px rgba(142, 68, 173, 0.4);
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 6px;
+      padding-left: 4px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 14px 18px;
+      font-family: inherit;
+      font-size: 14px;
+      border: 1px solid #D5DBDB;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #FAFAFA;
+      color: var(--dark);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      background-color: #FFFFFF;
+      box-shadow: 0 0 0 4px rgba(142, 68, 173, 0.15);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .error-msg {
+      background-color: #FDEDEC;
+      border: 1px solid #F5B7B1;
+      color: #C0392B;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo-area">🧺</div>
+    <h2>ระบบจัดการหลังบ้าน</h2>
+    <p>LINE Laundry OA Dashboard Authentication</p>
+
+    <div id="error-box" class="error-msg"></div>
+
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">ชื่อผู้ใช้งาน (Username)</label>
+        <input type="text" id="username" class="form-control" placeholder="กรอกชื่อผู้ใช้..." required autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">รหัสผ่าน (Password)</label>
+        <input type="password" id="password" class="form-control" placeholder="กรอกรหัสผ่าน..." required>
+      </div>
+
+      <button type="submit" class="btn-login">เข้าสู่ระบบ 🚀</button>
+    </form>
+  </div>
+
+  <script>
+    async function handleLogin(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const errorBox = document.getElementById('error-box');
+
+      errorBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: usernameInput.value.trim(),
+            password: passwordInput.value
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          localStorage.setItem('admin_token', data.token);
+          window.location.href = 'admin.html';
+        } else {
+          errorBox.innerText = data.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+          errorBox.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        errorBox.innerText = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์หลังบ้านได้ในขณะนี้';
+        errorBox.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

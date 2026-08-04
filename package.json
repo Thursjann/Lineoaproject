@@ -1,0 +1,16 @@
+{
+  "name": "line-oa-laundry",
+  "version": "1.0.0",
+  "description": "Complete LINE OA Laundry Service backend, LIFF front-end, and Admin Dashboard.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@line/bot-sdk": "^7.5.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  }
+}
