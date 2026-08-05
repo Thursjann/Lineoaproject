@@ -4,19 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login - LINE Laundry OA</title>
-  <!-- Google Fonts -->
+  <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   
   <style>
     :root {
-      --primary: #8E44AD;
-      --secondary: #3498DB;
-      --dark: #1E1E2F;
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --text: #2C3E50;
-      --text-muted: #7F8C8D;
+      --font-heading: 'Outfit', 'Prompt', sans-serif;
+      --font-body: 'Inter', 'Prompt', sans-serif;
+
+      --primary: #83695B;
+      --primary-hover: #6D564A;
+      --secondary: #ECC7D2;
+      --accent-blue: #C9DEE5;
+      --accent-olive: #B8B87F;
+      --bg: #FBF8F6;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --text: #43352E;
+      --text-muted: #83695B;
     }
 
     * {
@@ -26,8 +34,8 @@
     }
 
     body {
-      font-family: 'Prompt', 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--dark) 0%, #2c1a3b 100%);
+      font-family: var(--font-body);
+      background: linear-gradient(135deg, #43352E 0%, #83695B 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
@@ -144,13 +152,44 @@
       display: none;
       text-align: left;
     }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+      }
+
+      .login-container {
+        padding: 28px 20px;
+        border-radius: 20px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      .form-control {
+        padding: 12px 14px;
+      }
+
+      .btn-login {
+        padding: 12px;
+        font-size: 15px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .login-container {
+        max-width: 420px;
+        padding: 48px 40px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="login-container">
+  <div class="login-container" data-aos="zoom-in" data-aos-duration="650">
     <div class="logo-area">🧺</div>
-    <h2>ระบบจัดการหลังบ้าน</h2>
+    <h2 style="font-family: var(--font-heading);">ระบบจัดการหลังบ้าน</h2>
     <p>LINE Laundry OA Dashboard Authentication</p>
 
     <div id="error-box" class="error-msg"></div>
@@ -166,10 +205,24 @@
         <input type="password" id="password" class="form-control" placeholder="กรอกรหัสผ่าน..." required>
       </div>
 
-      <button type="submit" class="btn-login">เข้าสู่ระบบ 🚀</button>
+      <button type="submit" class="btn-login" style="font-weight: 700;">เข้าสู่ระบบ 🚀</button>
     </form>
   </div>
 
+  <!-- AOS Animation JS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 650,
+          once: false,
+          mirror: true,
+          easing: 'ease-out-cubic'
+        });
+      }
+    });
+  </script>
   <script>
     async function handleLogin(e) {
       e.preventDefault();

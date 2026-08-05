@@ -4,28 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - ระบบจัดการร้านซักรีด Fitcheck Laundry</title>
-  <!-- Google Fonts - Prompt & Inter -->
+  <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   
   <style>
     :root {
-      --primary: #8E44AD;
-      --primary-hover: #7D3C98;
+      --font-heading: 'Outfit', 'Prompt', sans-serif;
+      --font-body: 'Inter', 'Prompt', sans-serif;
+
+      /* User Specified Palette */
+      --primary: #83695B;          /* Warm Cocoa Brown */
+      --primary-hover: #6D564A;    /* Darker Cocoa */
+      --secondary: #ECC7D2;        /* Soft Dusty Pink */
+      --accent-blue: #C9DEE5;      /* Gentle Powder Blue */
+      --accent-olive: #B8B87F;     /* Muted Olive Matcha */
+
       --success: #2ECC71;
       --info: #3498DB;
       --warning: #F39C12;
       --danger: #E74C3C;
-      --danger-hover: #C0392B;
-      --bg: #F8F9FA;
-      --card-bg: #FFFFFF;
-      --text-main: #2C3E50;
-      --text-muted: #7F8C8D;
-      --border: #E5E7EB;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-      --radius: 12px;
+      --bg: #FBF8F6;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #43352E;
+      --text-muted: #83695B;
+      --border: #EEDFD9;
+      --shadow-sm: 0 4px 14px rgba(131, 105, 91, 0.08);
+      --shadow-md: 0 8px 24px rgba(131, 105, 91, 0.12);
+      --radius: 16px;
     }
 
     * {
@@ -35,11 +44,12 @@
     }
 
     body {
-      font-family: 'Prompt', 'Inter', sans-serif;
+      font-family: var(--font-body);
       background-color: var(--bg);
       color: var(--text-main);
       padding: 24px;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     header {
@@ -92,13 +102,34 @@
       align-items: start;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .kanban-board {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
       .kanban-board {
         grid-template-columns: repeat(2, 1fr);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
       }
     }
 
     @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+      header {
+        padding: 16px 20px;
+      }
       .kanban-board {
         grid-template-columns: 1fr;
       }
@@ -346,33 +377,123 @@
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
+
+    @media (max-width: 1024px) {
+      body {
+        padding: 18px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .refresh-badge {
+        flex: 1 1 48%;
+        min-width: 140px;
+      }
+
+      .kanban-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .kanban-column {
+        min-height: auto;
+      }
+
+      .order-card {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 14px;
+      }
+
+      header {
+        padding: 18px 20px;
+      }
+
+      .header-title {
+        font-size: 18px;
+      }
+
+      .header-actions {
+        gap: 12px;
+      }
+
+      .kanban-board {
+        grid-template-columns: 1fr;
+      }
+
+      .kanban-column {
+        padding: 14px;
+      }
+
+      .order-card {
+        gap: 10px;
+      }
+
+      .card-head,
+      .order-details,
+      .detail-row,
+      .btn-action,
+      .btn-card-util {
+        font-size: 12px;
+      }
+
+      .btn-action,
+      .btn-card-util {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      body {
+        padding: 32px 40px;
+      }
+
+      .kanban-board {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .kanban-column {
+        min-height: 560px;
+      }
+
+      .modal-container {
+        max-width: 520px;
+      }
+    }
   </style>
 </head>
 <body>
 
   <!-- Dashboard Header -->
-  <header>
-    <div class="header-title">
-      <svg style="width: 28px; height: 28px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19.36 10.04L20.5 9l-3.08-3.08-1.04 1.04 3.98 4.08zM9 19h3v-3h-3v3zm-4 0h3v-3H5v3zm-2-5h3v-3H3v3zm11 5h3v-3h-3v3zm-6-5h3v-3H8v3zm-5 5h3v-3H3v3zM19 14.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5.67 1.5 1.5 1.5 1.5-.67 1.5-1.5z"/></svg>
-      <span>ระบบจัดการหลังบ้าน Fitcheck Laundry</span>
+  <header data-aos="fade-down" data-aos-duration="600" style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border-radius: var(--radius); margin-bottom: 24px; box-shadow: var(--shadow-md); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; color: #FFFFFF;">
+    <div class="header-title" style="font-family: var(--font-heading); font-size: 22px; display: flex; align-items: center; gap: 12px;">
+      🧺 ระบบจัดการร้านซักรีด Fitcheck Laundry (Admin)
     </div>
-    <div class="header-actions">
-      <div id="connection-status" style="font-size: 13px; display:flex; align-items:center; gap:6px;">
-        <span style="width: 8px; height: 8px; background-color: var(--success); border-radius:50%; display:inline-block;"></span>
-        เชื่อมต่อปกติ
-      </div>
+    <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
       <button class="refresh-badge" onclick="fetchAndRenderOrders()">ดึงข้อมูลล่าสุด ↺</button>
-      <button class="refresh-badge" style="background-color:#E74C3C; margin-left:8px;" onclick="handleLogout()">ออกจากระบบ 🚪</button>
+      <button class="refresh-badge" style="background-color:#E74C3C;" onclick="handleLogout()">ออกจากระบบ 🚪</button>
     </div>
   </header>
   <!-- Broadcast Promotions Card -->
-  <div style="background-color:#EBF5FB; border:1px solid #AED6F1; border-radius:var(--radius); padding:16px; margin-bottom:24px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px;">
-    <h3 style="font-weight:600; font-size:15px; color:#1B4F72; display:flex; align-items:center; gap:8px; margin:0;">
-      📢 บรอดแคสต์โปรโมชั่นหาลูกค้าทุกคน
+  <div data-aos="fade-up" data-aos-duration="600" style="background-color: var(--accent-blue); border:1.5px solid #B0CFDB; border-radius:var(--radius); padding:18px; margin-bottom:24px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:12px;">
+    <h3 style="font-weight:700; font-size:16px; color:#2C3A42; font-family: var(--font-heading); display:flex; align-items:center; gap:8px; margin:0;">
+      📢 บรอดแคสต์โปรโมชั่นหาลูกค้าทุกคน (LINE OA Broadcast)
     </h3>
     <div style="display:flex; gap:16px; align-items:stretch; flex-wrap:wrap;">
-      <textarea id="broadcast-message" class="form-control" style="flex:1; min-height:60px; font-size:13px;" placeholder="พิมพ์โปรโมชั่นส่งกระจายหาลูกค้าทุกคน... (เช่น 'โปรซักรีดสุดฟินเฉพาะเสาร์อาทิตย์นี้ ซักพับเพียง 8฿/ชิ้น! 🧺')"></textarea>
-      <button class="btn-action" style="background-color:#2980B9; width:auto; white-space:nowrap; padding:12px 24px;" onclick="sendBroadcastPromotion()">
+      <textarea id="broadcast-message" class="form-control" style="flex:1; min-height:60px; font-size:13px; border-radius: 12px;" placeholder="พิมพ์โปรโมชั่นส่งกระจายหาลูกค้าทุกคน... (เช่น 'โปรซักรีดสุดฟินเฉพาะเสาร์อาทิตย์นี้ ซักพับเพียง 8฿/ชิ้น! 🧺')"></textarea>
+      <button class="btn-action" style="background-color:var(--primary); width:auto; white-space:nowrap; padding:12px 24px; border-radius: 12px; font-weight: 700;" onclick="sendBroadcastPromotion()">
         🚀 ส่งบรอดแคสต์
       </button>
     </div>
@@ -382,7 +503,7 @@
   <div class="kanban-board">
     
     <!-- 1. รอรับผ้า -->
-    <div class="kanban-column">
+    <div class="kanban-column" data-aos="fade-up" data-aos-delay="100">
       <div class="column-header pending">
         <span>รอรับผ้า (Pending)</span>
         <span id="count-pending" class="card-count">0</span>
@@ -393,7 +514,7 @@
     </div>
 
     <!-- 2. รับผ้าแล้ว -->
-    <div class="kanban-column">
+    <div class="kanban-column" data-aos="fade-up" data-aos-delay="150">
       <div class="column-header picked_up">
         <span>รับผ้าแล้ว (Picked Up)</span>
         <span id="count-picked_up" class="card-count">0</span>
@@ -404,7 +525,7 @@
     </div>
 
     <!-- 3. กำลังซัก -->
-    <div class="kanban-column">
+    <div class="kanban-column" data-aos="fade-up" data-aos-delay="200">
       <div class="column-header washing">
         <span>กำลังซัก (Washing)</span>
         <span id="count-washing" class="card-count">0</span>
@@ -415,7 +536,7 @@
     </div>
 
     <!-- 4. เสร็จสิ้น -->
-    <div class="kanban-column">
+    <div class="kanban-column" data-aos="fade-up" data-aos-delay="250">
       <div class="column-header completed">
         <span>ซักเสร็จสิ้น (Completed)</span>
         <span id="count-completed" class="card-count">0</span>
@@ -426,7 +547,7 @@
     </div>
 
     <!-- 5. จัดส่งแล้ว -->
-    <div class="kanban-column">
+    <div class="kanban-column" data-aos="fade-up" data-aos-delay="300">
       <div class="column-header delivered">
         <span>จัดส่งแล้ว (Delivered)</span>
         <span id="count-delivered" class="card-count">0</span>
@@ -466,6 +587,20 @@
     </div>
   </div>
 
+  <!-- AOS Animation JS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 650,
+          once: false,
+          mirror: true,
+          easing: 'ease-out-cubic'
+        });
+      }
+    });
+  </script>
   <script src="admin.js"></script>
 </body>
 </html>

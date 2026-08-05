@@ -4,25 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LINE Laundry Service - สั่งซักรีดออนไลน์</title>
-  <!-- Google Fonts - Inter & Prompt -->
+  <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
   <style>
     :root {
-      --primary: #8E44AD;
-      --primary-hover: #7D3C98;
-      --secondary: #3498DB;
-      --bg: #F4F6F7;
-      --card-bg: #FFFFFF;
-      --text-main: #2C3E50;
-      --text-muted: #7F8C8D;
-      --border: #E5E7EB;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-      --radius: 16px;
+      --font-heading: 'Outfit', 'Prompt', sans-serif;
+      --font-body: 'Inter', 'Prompt', sans-serif;
+      
+      /* User Specified Palette */
+      --primary: #83695B;          /* Warm Cocoa Brown (Primary accent & headings) */
+      --primary-hover: #6D564A;    /* Darker Cocoa */
+      --secondary: #ECC7D2;        /* Soft Dusty Pink */
+      --accent-blue: #C9DEE5;      /* Gentle Powder Blue */
+      --accent-olive: #B8B87F;     /* Muted Olive Matcha */
+
+      --bg: #FBF8F6;               /* Ultra Soft Warm Milk Background */
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --text-main: #43352E;        /* Deep Cocoa Text */
+      --text-muted: #83695B;       /* Muted Cocoa Text */
+      --border: #EEDFD9;           /* Soft Border */
+      --shadow-sm: 0 4px 14px rgba(131, 105, 91, 0.08);
+      --shadow-md: 0 8px 24px rgba(131, 105, 91, 0.12);
+      --shadow-lg: 0 16px 36px rgba(131, 105, 91, 0.16);
+      --radius: 20px;
     }
 
     * {
@@ -32,34 +43,67 @@
     }
 
     body {
-      font-family: 'Prompt', 'Inter', sans-serif;
+      font-family: var(--font-body);
       background-color: var(--bg);
       color: var(--text-main);
-      line-height: 1.5;
-      display: flex;
-      justify-content: center;
+      line-height: 1.6;
+      margin: 0;
       min-height: 100vh;
+      display: block;
+      -webkit-font-smoothing: antialiased;
     }
 
     .app-container {
       width: 100%;
-      max-width: 480px;
-      background-color: #FFFFFF;
+      max-width: 100%;
       min-height: 100vh;
+      background-color: #f8f9fa;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.94)), url('laundry-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
       display: flex;
       flex-direction: column;
       position: relative;
-      box-shadow: var(--shadow-lg);
       padding-bottom: 74px; /* Space for fixed bottom navigation */
     }
 
+    @media (min-width: 768px) {
+      body {
+        padding: 0;
+      }
+
+      .app-container {
+        border-radius: 0;
+        min-height: 100vh;
+        box-shadow: none;
+      }
+    }
+
+    main {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
     header {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      background: linear-gradient(135deg, #846452, #B58A75);
       padding: 24px 20px;
       color: #FFFFFF;
       border-bottom-left-radius: 24px;
       border-bottom-right-radius: 24px;
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 4px 15px rgba(132, 100, 82, 0.2);
+    }
+
+    .header-content {
+      max-width: 680px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .profile-card {
@@ -82,8 +126,10 @@
     }
 
     .profile-name {
-      font-size: 18px;
-      font-weight: 600;
+      font-family: var(--font-heading);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
     }
 
     .profile-status {
@@ -113,18 +159,28 @@
     }
 
     .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(239, 228, 217, 0.8);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 22px;
       margin-bottom: 20px;
       box-shadow: var(--shadow-sm);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
 
     .card-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      margin-bottom: 14px;
       color: var(--text-main);
       display: flex;
       justify-content: space-between;
@@ -168,6 +224,15 @@
       gap: 12px;
     }
 
+    @media (max-width: 480px) {
+      .input-row {
+        flex-direction: column;
+      }
+      .input-row .btn-gps {
+        width: 100% !important;
+      }
+    }
+
     .btn {
       width: 100%;
       padding: 14px 20px;
@@ -177,11 +242,14 @@
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
 
     .btn-primary {
@@ -191,6 +259,7 @@
 
     .btn-primary:hover {
       background-color: var(--primary-hover);
+      transform: translateY(-1px);
     }
 
     .btn-secondary {
@@ -206,29 +275,31 @@
       background-color: #E8F8F5;
       color: #16A085;
       border: 1px dashed #1ABC9C;
-      padding: 10px;
+      padding: 10px 16px;
       font-size: 13px;
+      flex-shrink: 0;
     }
 
     .btn-gps:hover {
       background-color: #D1F2EB;
     }
 
-    /* Loyalty Stamp Grid */
+    /* Loyalty Stamp Grid Responsive */
     .stamp-card-container {
-      background: linear-gradient(135deg, #FFF9E6, #FFF2CC);
-      border: 2px solid #F9E79F;
+      background: linear-gradient(135deg, #EAF3F6, #C9DEE5);
+      border: 2px solid #A8CDD8;
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 18px;
       margin-bottom: 20px;
       box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease;
     }
 
     .stamp-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      margin: 14px 0;
+      grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
     }
 
     .stamp-slot {
@@ -243,26 +314,24 @@
     }
 
     .stamp-active {
-      background: linear-gradient(135deg, #F1C40F, #F39C12);
+      background: linear-gradient(135deg, #83695B, #6D564A);
       color: #FFFFFF;
-      box-shadow: 0 4px 6px rgba(243, 156, 18, 0.3);
+      box-shadow: 0 4px 8px rgba(131, 105, 91, 0.35);
       border: none;
     }
 
     .stamp-inactive {
       background-color: #FFFFFF;
-      border: 2px dashed #BDC3C7;
-      color: #BDC3C7;
+      border: 2px dashed #A8CDD8;
+      color: #7B9FA9;
     }
 
     /* Bottom Navigation Bar styling */
     .bottom-nav {
       position: fixed;
       bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
       width: 100%;
-      max-width: 480px;
       height: 64px;
       background: #FFFFFF;
       border-top: 1px solid var(--border);
@@ -477,6 +546,177 @@
       gap: 16px;
       text-align: center;
     }
+
+    /* Responsive layout for tablet and desktop */
+    @media (min-width: 640px) {
+      body {
+        padding: 0;
+      }
+
+      .app-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding-bottom: 90px;
+      }
+
+      .bottom-nav {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+      }
+
+      header {
+        padding: 28px 28px;
+      }
+
+      main {
+        padding: 26px;
+      }
+
+      .profile-card {
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .stamp-grid {
+        grid-template-columns: repeat(10, minmax(40px, 1fr));
+      }
+
+      .order-body {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .order-footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .modal-container {
+        max-width: 520px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        padding: 0;
+        background-color: var(--bg);
+      }
+
+      .app-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-shadow: none;
+      }
+
+      .bottom-nav {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      header {
+        padding: 32px 36px;
+      }
+
+      main {
+        padding: 32px;
+      }
+
+      .card {
+        padding: 28px;
+      }
+
+      .form-control {
+        font-size: 15px;
+      }
+
+      .btn {
+        padding: 16px 24px;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+      }
+
+      .order-body {
+        flex: 1;
+      }
+
+      .order-footer {
+        width: auto;
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        padding: 0;
+        background-color: var(--bg);
+      }
+
+      .app-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-shadow: none;
+      }
+
+      .bottom-nav {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      header {
+        padding: 24px 20px;
+      }
+
+      main {
+        padding: 24px 20px;
+        max-width: 680px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .form-control {
+        font-size: 14px;
+      }
+
+      .btn {
+        padding: 13px 20px;
+        font-size: 14px;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+      }
+
+      .order-body {
+        flex: 1;
+      }
+
+      .order-footer {
+        width: auto;
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -488,24 +728,28 @@
   </div>
 
   <div class="app-container">
-    
+
     <!-- Profile Banner -->
     <header>
-      <div class="profile-card">
-        <img id="user-avatar" class="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile Avatar">
-        <div class="profile-info">
-          <div id="user-name" class="profile-name">กำลังโหลด...</div>
-          <div style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin: 4px 0; font-weight: 500;">
-            🌟 แสตมป์สะสม: <span id="user-points">0</span> ดวง
-          </div>
-          <div class="profile-status">ยินดีต้อนรับสู่ Fitcheck Laundry</div>
-        </div>
+      <div class="header-content">
+        <div class="profile-card">
+          <img id="user-avatar" class="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png"
+            alt="Profile Avatar">
+          <div class="profile-info">
+            <div id="user-name" class="profile-name">กำลังโหลด...</div>
+            <div
+              style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin: 4px 0; font-weight: 500;">
+              🌟 แสตมป์สะสม: <span id="user-points">0</span> ดวง
+            </div>
+            <div class="profile-status">ยินดีต้อนรับสู่ Fitcheck Laundry</div>
+            </div>
+            </div>
       </div>
     </header>
 
     <!-- Main Content Pages -->
     <main>
-      
+
       <!-- Mock User Swapper (Outside LINE OA) -->
       <div id="mock-login-bar" class="mock-warning" style="display:none;">
         <span>⚠️ รันนอกแอป LINE (ทดสอบบัญชีจำลอง)</span>
@@ -516,27 +760,33 @@
       <!-- 1. HOME VIEW (Loyalty Card + Active Orders Tracker) -->
       <!-- ==================================================== -->
       <section id="page-home" class="page-section active">
-        
+
         <!-- e-Stamp Loyalty Card -->
-        <div class="stamp-card-container">
-          <h4 style="font-weight:600; font-size:14px; color:#7E5109; display:flex; justify-content:space-between; align-items:center;">
+        <div class="stamp-card-container" data-aos="fade-up" data-aos-duration="700">
+          <h4
+            style="font-weight:600; font-size:14px; color:var(--text-main); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
             <span>บัตรแสตมป์สะสม (e-Stamp Card)</span>
-            <span style="font-size:11px; background:#FDF2E9; padding:2px 8px; border-radius:10px; border:1.5px solid #F9E79F;" id="stamp-text-summary">0/10 ดวง</span>
+            <span
+              style="font-size:11px; background:#FFFFFF; padding:2px 8px; border-radius:10px; border:1.5px solid #A8CDD8; color:var(--primary); font-weight:700;"
+              id="stamp-text-summary">0/10 ดวง</span>
           </h4>
-          <p style="font-size:11px; color:#9A7D0A; margin-top:2px;">สะสมครบ 10 แสตมป์ เพื่อแลกรับคูปองส่วนลด 100 บาท!</p>
-          
+          <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">สะสมครบ 10 แสตมป์ เพื่อแลกรับคูปองส่วนลด 100 บาท!</p>
+
           <!-- 10 stamp circles grid -->
           <div class="stamp-grid" id="loyalty-stamp-grid">
             <!-- Populated via script -->
           </div>
 
-          <button id="btn-redeem" class="btn" style="margin-top:10px; padding:10px; font-size:13px; background:#F1C40F; color:#7E5109; box-shadow:0 3px 6px rgba(241,196,15,0.25); display:none;" onclick="handleStampRedemption()">
+          <button id="btn-redeem" class="btn"
+            style="margin-top:10px; padding:10px; font-size:13px; background:linear-gradient(135deg, var(--primary), var(--primary-hover)); color:#FFFFFF; box-shadow:0 4px 10px rgba(131, 105, 91, 0.3); display:none;"
+            onclick="handleStampRedemption()">
             🎁 แลกรับคูปองส่วนลด 100 บาท (หัก 10 แสตมป์)
           </button>
         </div>
 
-        <div class="card" style="border: none; background: linear-gradient(135deg, #F3ECEF, #EBF5FB); border-radius: 20px;">
-          <h3 style="font-weight: 600; margin-bottom: 8px;">ส่งผ้าซักรีดด่วนทันที 🧺</h3>
+        <div class="card" data-aos="flip-up" data-aos-delay="100" data-aos-duration="600"
+          style="border: 1.5px solid var(--border); background: linear-gradient(135deg, #FBF4F6, #F2F7F9); border-radius: 20px;">
+          <h3 style="font-weight: 700; font-family: var(--font-heading); margin-bottom: 8px; color: var(--text-main);">ส่งผ้าซักรีดด่วนทันที 🧺</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">กดสร้างใบจองบริการ ระบุพิกัดและเวลาที่สะดวกให้เจ้าหน้าที่เข้าไปรับของ</p>
           <button class="btn btn-primary" onclick="navigateToTab('page-form')">
             <svg style="width: 20px; height: 20px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -544,12 +794,12 @@
           </button>
         </div>
 
-        <div class="card-title">
+        <div class="card-title" data-aos="fade-up" data-aos-delay="150">
           <span>สถานะออเดอร์และการติดตาม</span>
           <button onclick="loadUserOrders()" style="background: none; border: none; color: var(--primary); font-size:13px; font-weight:600; cursor:pointer;">รีเฟรช ↺</button>
         </div>
 
-        <div id="orders-list">
+        <div id="orders-list" data-aos="fade-up" data-aos-delay="200">
           <div style="text-align: center; color: var(--text-muted); padding: 30px 0; font-size:14px;">
             ไม่มีประวัติการสั่งซักในขณะนี้
           </div>
@@ -560,19 +810,24 @@
       <!-- 2. PRICING & PROMOTIONS VIEW -->
       <!-- ==================================================== -->
       <section id="page-rates" class="page-section">
-        <!-- Promotion banner cards -->
-        <div class="promo-banner" style="background: linear-gradient(135deg, #E67E22, #F39C12);">
-          <h3 style="font-weight: 700; font-size: 16px;">🔥 โปรโมชั่นซักราคาส่ง/ราคาเหมา</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">เมื่อส่งซักเสื้อผ้าตั้งแต่ 50 ชิ้นขึ้นไปใน 1 ออเดอร์ รับส่วนลดราคาส่งสุดพิเศษ 20% ทันที!</p>
+        <!-- Promotion banner cards using 4 specified colors -->
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-duration="600" style="background: linear-gradient(135deg, #ECC7D2, #E2B2C0); color: #43352E; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🔥 โปรโมชั่นซักราคาส่ง/ราคาเหมา</h3>
+          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">เมื่อส่งซักเสื้อผ้าตั้งแต่ 50 ชิ้นขึ้นไปใน 1 ออเดอร์ รับส่วนลดราคาส่งสุดพิเศษ 20% ทันที!</p>
         </div>
 
-        <div class="promo-banner" style="background: linear-gradient(135deg, #8E44AD, #3498DB); margin-top: -10px;">
-          <h3 style="font-weight: 700; font-size: 16px;">🧺 แสตมป์สะสมแลกส่วนลด</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">ทุกการใช้บริการส่งซักผ้าเสร็จสิ้น 1 ครั้ง จะได้รับแสตมป์ 1 ดวง สะสมครบ 10 ดวง กดแลกคูปองส่วนลด 100 บาทได้ทันที</p>
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="100" data-aos-duration="600" style="background: linear-gradient(135deg, #C9DEE5, #B0CFDB); color: #2C3A42; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🧺 แสตมป์สะสมแลกส่วนลด</h3>
+          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">ทุกการใช้บริการส่งซักผ้าเสร็จสิ้น 1 ครั้ง จะได้รับแสตมป์ 1 ดวง สะสมครบ 10 ดวง กดแลกคูปองส่วนลด 100 บาทได้ทันที</p>
+        </div>
+
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="150" data-aos-duration="600" style="background: linear-gradient(135deg, #B8B87F, #A5A56C); color: #32321C; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🌿 สมาชิกพิเศษ Fitcheck Club</h3>
+          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">รับสิทธิ์ส่งซักฟรีไม่มีขั้นต่ำ พร้อมบริการน้ำยาปรับผ้านุ่มสูตรถนอมผ้าฟรีทุกออเดอร์</p>
         </div>
 
         <!-- Dynamic service pricing list card -->
-        <div class="card">
+        <div class="card" data-aos="fade-up" data-aos-delay="200">
           <h3 class="card-title" style="margin-bottom: 16px; border-bottom: 1.5px solid var(--border); padding-bottom: 8px;">
             💵 อัตราค่าบริการหลัก
           </h3>
@@ -581,7 +836,8 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" onclick="navigateToTab('page-form')" style="margin-top: 10px;">
+        <button class="btn btn-primary" onclick="navigateToTab('page-form')" style="margin-top: 10px;" data-aos="fade-up"
+          data-aos-delay="250">
           สั่งซักผ้าเดี๋ยวนี้
         </button>
       </section>
@@ -595,7 +851,14 @@
         </div>
 
         <form id="order-form" onsubmit="handleOrderSubmit(event)">
-          <!-- 1. ตัวเลือกรับส่งผ้า -->
+<!-- 2. เลือกบริการ -->
+<div class="form-group">
+  <label class="form-label">เลือกประเภทบริการ (เลือกได้หลายบริการ)</label>
+  <div id="services-checkbox-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom: 12px;">
+    <!-- Dynamic Checkboxes -->
+  </div>
+</div>
+  <!-- 1. ตัวเลือกรับส่งผ้า -->
           <div class="form-group">
             <label class="form-label">ตัวเลือกการรับ-ส่งผ้า</label>
             <div style="display: flex; gap: 12px; margin-bottom: 12px;">
@@ -609,15 +872,6 @@
               </label>
             </div>
           </div>
-
-          <!-- 2. เลือกบริการ -->
-          <div class="form-group">
-            <label class="form-label">เลือกประเภทบริการ (เลือกได้หลายบริการ)</label>
-            <div id="services-checkbox-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom: 12px;">
-              <!-- Dynamic Checkboxes -->
-            </div>
-          </div>
-
           <!-- 3. ที่อยู่ / GPS (แสดงเมื่อเลือก pickup) -->
           <div class="form-group" id="gps-form-group">
             <label class="form-label">ที่อยู่จัดส่ง / พิกัด GPS</label>
@@ -702,12 +956,12 @@
     <div class="modal-container">
       <h3 style="font-weight: 600; font-size: 18px; color: var(--text-main); margin-bottom: 2px;">สแกนเพื่อชำระเงิน</h3>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">กรุณาสแกน QR Code นี้ผ่านแอปธนาคารของท่านเพื่อชำระเงิน</p>
-      
+
       <!-- PromptPay QR Code Container -->
       <div style="background: white; padding: 12px; border: 1px solid var(--border); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
         <img id="payment-qr" src="" alt="PromptPay QR Code" style="width: 200px; height: 200px; display: block; object-fit: contain;">
       </div>
-      
+
       <div style="width: 100%; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-main); margin-top: 8px;">
         <div style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--border); padding-bottom:4px;">
           <span>ช่องทาง:</span>
@@ -721,7 +975,7 @@
           💡 โอนเงินเสร็จแล้ว กรุณาส่งรูปสลิปหลักฐานการโอนเข้ามาในแชท LINE นี้ได้เลยครับ
         </div>
       </div>
-      
+
       <button type="button" class="btn btn-primary" onclick="closePaymentModal()" style="width: 100%; margin-top: 10px;">
         ตกลง และปิดหน้านี้
       </button>
@@ -730,6 +984,20 @@
 
   <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- AOS Animation JS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 650,
+          once: false,       /* อนุญาตให้ทำอนิเมชันซ้ำเมื่อสโครลผ่าน */
+          mirror: true,      /* เล่นอนิเมชันทั้งตอนสโครลเข้า (In) และ สโครลออก (Out) */
+          easing: 'ease-out-cubic'
+        });
+      }
+    });
+  </script>
   <!-- App controllers script -->
   <script src="app.js"></script>
 </body>

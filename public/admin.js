@@ -177,6 +177,14 @@ async function fetchAndRenderOrders() {
 
         const encodedItems = encodeURIComponent(JSON.stringify(order.items || []));
 
+        let displayOrderId = order.id;
+        if (displayOrderId.includes('-')) {
+          const parts = displayOrderId.split('-');
+          displayOrderId = `ORD-${parts[parts.length - 1].substring(0, 5)}`;
+        } else {
+          displayOrderId = `ORD-${displayOrderId.substring(0, 5)}`;
+        }
+
         card.innerHTML = `
           <div class="card-header">
             <div class="customer-avatar-group">
@@ -192,11 +200,11 @@ async function fetchAndRenderOrders() {
           <div class="order-details">
             <div class="detail-row">
               <span class="detail-label">เลขออเดอร์:</span>
-              <span class="detail-val" style="font-size:11px; color:var(--text-muted);">${order.id}</span>
+              <span class="detail-val" style="font-size:12px; color:var(--primary); font-weight:700; font-family:var(--font-heading);">${displayOrderId}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">นัดรับผ้า:</span>
-              <span class="detail-val" style="color:var(--primary)">${dateFormatted}</span>
+              <span class="detail-val" style="color:var(--text-main); font-weight:600;">${dateFormatted}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">การจัดส่ง:</span>

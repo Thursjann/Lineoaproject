@@ -1,12 +1,12 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-const dbPath = path.join(__dirname, 'laundry.db');
+const dbPath = path.join(__dirname, "laundry.db");
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Error opening database:', err.message);
+    console.error("Error opening database:", err.message);
   } else {
-    console.log('Connected to SQLite database.');
+    console.log("Connected to SQLite database.");
   }
 });
 
@@ -46,14 +46,14 @@ const dbQuery = {
         else resolve();
       });
     });
-  }
+  },
 };
 
 // Initialize schema and seed data
 async function initDatabase() {
   try {
     // Enable foreign keys
-    await dbQuery.exec('PRAGMA foreign_keys = ON;');
+    await dbQuery.exec("PRAGMA foreign_keys = ON;");
 
     // 1. Create Customers Table
     await dbQuery.exec(`
@@ -110,38 +110,70 @@ async function initDatabase() {
     `);
 
     // Seed service rates if empty (categorized list)
-    const ratesCount = await dbQuery.get('SELECT COUNT(*) as count FROM service_rates');
+    const ratesCount = await dbQuery.get(
+      "SELECT COUNT(*) as count FROM service_rates",
+    );
     if (ratesCount.count === 0) {
       const initialRates = [
         // 1. เสื้อผ้าทั่วไป
-        { name: 'ซักพับ (Wash & Fold)', pricePerUnit: 10.00, unit: 'ชิ้น', category: 'เสื้อผ้าทั่วไป' },
-        { name: 'ซักรีด (Wash & Iron)', pricePerUnit: 15.00, unit: 'ชิ้น', category: 'เสื้อผ้าทั่วไป' },
-        
+        {
+          name: "ซักพับ (Wash & Fold)",
+          pricePerUnit: 10.0,
+          unit: "ชิ้น",
+          category: "เสื้อผ้าทั่วไป",
+        },
+        {
+          name: "ซักรีด (Wash & Iron)",
+          pricePerUnit: 15.0,
+          unit: "ชิ้น",
+          category: "เสื้อผ้าทั่วไป",
+        },
+
         // 2. เครื่องนอน & ผ้าผืนใหญ่
-        { name: 'ซักพับ ผ้านวม/ผ้าห่ม', pricePerUnit: 80.00, unit: 'ผืน', category: 'เครื่องนอน & ผ้าผืนใหญ่' },
-        { name: 'ซักแห้ง ผ้านวม/ผ้าห่ม', pricePerUnit: 150.00, unit: 'ผืน', category: 'เครื่องนอน & ผ้าผืนใหญ่' },
-        
+        {
+          name: "ซักพับ ผ้านวม/ผ้าห่ม",
+          pricePerUnit: 80.0,
+          unit: "ผืน",
+          category: "เครื่องนอน & ผ้าผืนใหญ่",
+        },
+        {
+          name: "ซักแห้ง ผ้านวม/ผ้าห่ม",
+          pricePerUnit: 150.0,
+          unit: "ผืน",
+          category: "เครื่องนอน & ผ้าผืนใหญ่",
+        },
+
         // 3. บริการพิเศษ
-        { name: 'ซักแห้ง สูท/เสื้อนอก', pricePerUnit: 120.00, unit: 'ชุด', category: 'บริการพิเศษ' },
-        { name: 'ซักแห้ง รองเท้า/กระเป๋า', pricePerUnit: 180.00, unit: 'คู่', category: 'บริการพิเศษ' }
+        {
+          name: "ซักแห้ง สูท/เสื้อนอก",
+          pricePerUnit: 120.0,
+          unit: "ชุด",
+          category: "บริการพิเศษ",
+        },
+        {
+          name: "ซักแห้ง รองเท้า/กระเป๋า",
+          pricePerUnit: 180.0,
+          unit: "คู่",
+          category: "บริการพิเศษ",
+        },
       ];
 
       for (const rate of initialRates) {
         await dbQuery.run(
-          'INSERT INTO service_rates (name, pricePerUnit, unit, category) VALUES (?, ?, ?, ?)',
-          [rate.name, rate.pricePerUnit, rate.unit, rate.category]
+          "INSERT INTO service_rates (name, pricePerUnit, unit, category) VALUES (?, ?, ?, ?)",
+          [rate.name, rate.pricePerUnit, rate.unit, rate.category],
         );
       }
-      console.log('Seeded initial categorized service rates.');
+      console.log("Seeded initial categorized service rates.");
     }
 
-    console.log('Database initialized successfully.');
+    console.log("Database initialized successfully.");
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    console.error("Failed to initialize database:", error);
   }
 }
 
 module.exports = {
   dbQuery,
-  initDatabase
+  initDatabase,
 };
