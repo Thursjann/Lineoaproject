@@ -109,53 +109,39 @@ async function initDatabase() {
       )
     `);
 
-    // Seed service rates if empty (categorized list)
+    // Seed service rates if empty (categorized list - Synced with Dialogflow)
     const ratesCount = await dbQuery.get(
       "SELECT COUNT(*) as count FROM service_rates",
     );
     if (ratesCount.count === 0) {
       const initialRates = [
-        // 1. เสื้อผ้าทั่วไป
-        {
-          name: "ซักพับ (Wash & Fold)",
-          pricePerUnit: 10.0,
-          unit: "ชิ้น",
-          category: "เสื้อผ้าทั่วไป",
-        },
-        {
-          name: "ซักรีด (Wash & Iron)",
-          pricePerUnit: 15.0,
-          unit: "ชิ้น",
-          category: "เสื้อผ้าทั่วไป",
-        },
+        // 1. เสื้อ (Tops)
+        { name: "ซักพับ เสื้อยืด / เสื้อโปโล / เสื้อกล้าม", pricePerUnit: 20.0, unit: "ชิ้น", category: "เสื้อ" },
+        { name: "ซักพับ เสื้อกันหนาว / เสื้อแขนยาว", pricePerUnit: 40.0, unit: "ชิ้น", category: "เสื้อ" },
+        { name: "ซักรีด เสื้อยืด / เสื้อโปโล", pricePerUnit: 35.0, unit: "ชิ้น", category: "เสื้อ" },
+        { name: "ซักรีด เสื้อเชิ้ตทำงาน", pricePerUnit: 45.0, unit: "ชิ้น", category: "เสื้อ" },
+        { name: "ซักรีด เสื้อไหมพรม / เสื้อแฟชั่น", pricePerUnit: 60.0, unit: "ชิ้น", category: "เสื้อ" },
 
-        // 2. เครื่องนอน & ผ้าผืนใหญ่
-        {
-          name: "ซักพับ ผ้านวม/ผ้าห่ม",
-          pricePerUnit: 80.0,
-          unit: "ผืน",
-          category: "เครื่องนอน & ผ้าผืนใหญ่",
-        },
-        {
-          name: "ซักแห้ง ผ้านวม/ผ้าห่ม",
-          pricePerUnit: 150.0,
-          unit: "ผืน",
-          category: "เครื่องนอน & ผ้าผืนใหญ่",
-        },
+        // 2. กางเกง (Bottoms)
+        { name: "ซักพับ กางเกงขาสั้น / ชุดนอน", pricePerUnit: 20.0, unit: "ชิ้น", category: "กางเกง" },
+        { name: "ซักพับ กางเกงขายาว / ยีนส์ / วอร์ม", pricePerUnit: 30.0, unit: "ชิ้น", category: "กางเกง" },
+        { name: "ซักรีด กางเกงขาสั้น", pricePerUnit: 35.0, unit: "ชิ้น", category: "กางเกง" },
+        { name: "ซักรีด กางเกงขายาว / สแล็ค / ยีนส์", pricePerUnit: 45.0, unit: "ชิ้น", category: "กางเกง" },
+        { name: "ซักรีด กระโปรงทั่วไป", pricePerUnit: 40.0, unit: "ชิ้น", category: "กางเกง" },
+        { name: "ซักรีด กระโปรงพลีท (อัดกลีบ)", pricePerUnit: 60.0, unit: "ชิ้น", category: "กางเกง" },
 
-        // 3. บริการพิเศษ
-        {
-          name: "ซักแห้ง สูท/เสื้อนอก",
-          pricePerUnit: 120.0,
-          unit: "ชุด",
-          category: "บริการพิเศษ",
-        },
-        {
-          name: "ซักแห้ง รองเท้า/กระเป๋า",
-          pricePerUnit: 180.0,
-          unit: "คู่",
-          category: "บริการพิเศษ",
-        },
+        // 3. ชุดเครื่องนอน (Bedding)
+        { name: "ซักพับ ปลอกหมอน / ปลอกหมอนข้าง", pricePerUnit: 20.0, unit: "ชิ้น", category: "ชุดเครื่องนอน" },
+        { name: "ซักพับ ผ้าปูที่นอน (3.5 / 5 / 6 ฟุต)", pricePerUnit: 80.0, unit: "ชิ้น", category: "ชุดเครื่องนอน" },
+        { name: "ซักพับ ผ้ารองกันเปื้อน", pricePerUnit: 100.0, unit: "ชิ้น", category: "ชุดเครื่องนอน" },
+        { name: "ซักพับ ผ้านวม / ผ้าห่มนวมผืนใหญ่", pricePerUnit: 180.0, unit: "ผืน", category: "ชุดเครื่องนอน" },
+
+        // 4. สูท & ชุดพิเศษ (Suits & Special)
+        { name: "ซักรีด/ซักแห้ง เสื้อสูท / Blazer", pricePerUnit: 120.0, unit: "ชิ้น", category: "สูท" },
+        { name: "ซักรีด/ซักแห้ง กางเกงสูท / กระโปรงสูท", pricePerUnit: 80.0, unit: "ชิ้น", category: "สูท" },
+        { name: "ซักรีด/ซักแห้ง ชุดสูทเซ็ต (เสื้อ + กางเกง)", pricePerUnit: 180.0, unit: "ชุด", category: "สูท" },
+        { name: "ซักรีด/ซักแห้ง เสื้อกั๊กสูท (Vest)", pricePerUnit: 60.0, unit: "ชิ้น", category: "สูท" },
+        { name: "ซักรีด/ซักแห้ง ชุดราตรี / ชุดพิธีการ", pricePerUnit: 200.0, unit: "ชุด", category: "สูท" },
       ];
 
       for (const rate of initialRates) {
