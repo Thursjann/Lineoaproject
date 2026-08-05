@@ -244,6 +244,40 @@ app.get("/api/orders", verifyAdminToken, async (req, res) => {
   }
 });
 
+// Public order lookup by order number (used by the customer status page)
+// ไม่ต้องใช้ admin token แต่ส่งคืนเฉพาะฟิลด์ที่จำเป็น ไม่รวม customerId (LINE userId)
+app.get("/api/orders/:id", async (req, res) => {
+  try {
+    const order = await dbQuery.get("SELECT * FROM orders WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const items = await dbQuery.all(
+      "SELECT serviceType, itemCount, price FROM order_items WHERE orderId = ?",
+      [order.id],
+    );
+
+    res.json({
+      id: order.id,
+      status: order.status,
+      deliveryDateTime: order.deliveryDateTime,
+      deliveryMethod: order.deliveryMethod,
+      paymentMethod: order.paymentMethod,
+      totalPrice: order.totalPrice,
+      discountApplied: order.discountApplied,
+      createdAt: order.createdAt,
+      items,
+    });
+  } catch (error) {
+    console.error("Error in GET /api/orders/:id:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Create a new order (with multiple items)
 app.post("/api/orders", async (req, res) => {
   try {
@@ -696,6 +730,55 @@ async function handleLineEvent(event) {
     }
   }
 
+  // ปุ่มแลกคูปองบนการ์ดบัตรสะสม
+  if (event.type === "postback") {
+    const userId = event.source.userId;
+    const params = new URLSearchParams(event.postback?.data || "");
+
+    if (params.get("action") === "redeem_coupon") {
+      try {
+        const customer = await dbQuery.get(
+          "SELECT points, displayName, couponCount FROM customers WHERE id = ?",
+          [userId],
+        );
+
+        if (!customer || customer.points < STAMP_GOAL) {
+          await lineClient.replyMessage(event.replyToken, {
+            type: "text",
+            text: `แสตมป์สะสมยังไม่ครบ ${STAMP_GOAL} ดวงครับ (ตอนนี้มี ${customer?.points || 0} ดวง)`,
+          });
+          return;
+        }
+
+        const newPoints = customer.points - STAMP_GOAL;
+        const newCouponCount = (customer.couponCount || 0) + 1;
+        await dbQuery.run(
+          "UPDATE customers SET points = ?, couponCount = ? WHERE id = ?",
+          [newPoints, newCouponCount, userId],
+        );
+        console.log(
+          `Redeemed coupon via LINE for ${customer.displayName} (${userId}). Stamps left: ${newPoints}, Coupons: ${newCouponCount}`,
+        );
+
+        // ตอบด้วยการ์ดใบใหม่ที่อัปเดตแต้มแล้ว
+        await lineClient.replyMessage(event.replyToken, [
+          {
+            type: "text",
+            text: `🎉 ยินดีด้วยครับ! แลกคูปองส่วนลด 100 บาท สำเร็จแล้ว\nใช้ได้ตอนจองคิวครั้งถัดไปเลยนะครับ`,
+          },
+          buildRewardCardFlex({
+            ...customer,
+            points: newPoints,
+            couponCount: newCouponCount,
+          }),
+        ]);
+      } catch (err) {
+        console.error("Error redeeming coupon via LINE postback:", err);
+      }
+    }
+    return;
+  }
+
   if (event.type === "message" && event.message.type === "text") {
     const text = event.message.text.trim();
     const userId = event.source.userId;
@@ -735,7 +818,8 @@ async function handleLineEvent(event) {
 // ----------------------------------------------------
 // 5. Flex Message Builder & Push Function
 // ----------------------------------------------------
-async function sendStatusFlexMessage(customerId, order, replyToken = null) {
+// สร้าง Flex bubble ของสถานะออเดอร์ (ใช้ร่วมกันระหว่าง LINE push/reply และ Dialogflow fulfillment)
+async function buildStatusFlexContents(customerId, order) {
   let statusText = "";
   let statusColor = "";
   let statusDescription = "";
@@ -834,8 +918,8 @@ async function sendStatusFlexMessage(customerId, order, replyToken = null) {
         layout: "vertical",
         margin: "md",
         backgroundColor: "#FCF3CF",
-        padding: "10px",
-        borderRadius: "8px",
+        paddingAll: "10px",
+        cornerRadius: "8px",
         contents: [
           {
             type: "text",
@@ -1045,29 +1129,18 @@ async function sendStatusFlexMessage(customerId, order, replyToken = null) {
         },
       ],
     },
-    footer: {
-      type: "box",
-      layout: "vertical",
-      spacing: "sm",
-      contents: [
-        {
-          type: "button",
-          style: "secondary",
-          action: {
-            type: "uri",
-            label: "ติดต่อเจ้าหน้าที่",
-            uri: "https://line.me",
-          },
-        },
-      ],
-    },
   };
 
-  const message = {
+  return {
     type: "flex",
     altText: `อัปเดตสถานะออเดอร์ซักรีด: ${statusText}`,
     contents: flexContents,
   };
+}
+
+// ส่ง Flex สถานะออเดอร์ผ่าน LINE Messaging API (reply ถ้ามี replyToken, ไม่งั้น push)
+async function sendStatusFlexMessage(customerId, order, replyToken = null) {
+  const message = await buildStatusFlexContents(customerId, order);
 
   try {
     if (customerId.startsWith("MOCK") || !hasCredentials) {
@@ -1089,6 +1162,351 @@ async function sendStatusFlexMessage(customerId, order, replyToken = null) {
     console.error("Error sending Flex message via LINE Messaging API:", err);
   }
 }
+
+// ----------------------------------------------------
+// 5.1 Reward Card (บัตรสะสมแสตมป์) Flex Builder
+// ----------------------------------------------------
+const STAMP_GOAL = 10; // สะสมครบกี่ดวงถึงแลกรางวัลได้
+
+// สร้างวงกลมแสตมป์ 1 ดวง — ดวงที่สะสมแล้วเป็นสีน้ำตาลมีเครื่องหมาย ดวงที่ยังไม่ได้เป็นตัวเลขจาง
+function buildStampSlot(index, earned, isGoal = false) {
+  if (isGoal) {
+    return {
+      type: "box",
+      layout: "vertical",
+      width: "44px",
+      height: "44px",
+      cornerRadius: "22px",
+      backgroundColor: earned ? "#F1C40F" : "#EFEBE7",
+      justifyContent: "center",
+      alignItems: "center",
+      contents: [
+        {
+          type: "text",
+          text: "GOAL",
+          size: "xxs",
+          weight: "bold",
+          align: "center",
+          color: earned ? "#FFFFFF" : "#B5A99E",
+        },
+      ],
+    };
+  }
+
+  return {
+    type: "box",
+    layout: "vertical",
+    width: "44px",
+    height: "44px",
+    cornerRadius: "22px",
+    backgroundColor: earned ? "#83695B" : "#F7F4F1",
+    borderWidth: earned ? "none" : "2px",
+    borderColor: "#E8E0D9",
+    justifyContent: "center",
+    alignItems: "center",
+    contents: [
+      {
+        type: "text",
+        text: earned ? "🧺" : String(index),
+        size: earned ? "lg" : "sm",
+        weight: "bold",
+        align: "center",
+        color: earned ? "#FFFFFF" : "#C4B8AE",
+      },
+    ],
+  };
+}
+
+// สร้างการ์ดบัตรสะสมแสตมป์
+function buildRewardCardFlex(customer) {
+  const points = customer.points || 0;
+  const coupons = customer.couponCount || 0;
+  const canRedeem = points >= STAMP_GOAL;
+  const remaining = Math.max(0, STAMP_GOAL - points);
+
+  // แถวที่ 1: ดวงที่ 1-5 | แถวที่ 2: ดวงที่ 6-9 + ช่อง GOAL
+  const row1 = [];
+  for (let i = 1; i <= 5; i++) {
+    row1.push(buildStampSlot(i, points >= i));
+  }
+
+  const row2 = [];
+  for (let i = 6; i <= 9; i++) {
+    row2.push(buildStampSlot(i, points >= i));
+  }
+  row2.push(buildStampSlot(10, points >= STAMP_GOAL, true));
+
+  const stampRow = (contents) => ({
+    type: "box",
+    layout: "horizontal",
+    spacing: "sm",
+    margin: "md",
+    contents,
+  });
+
+  // ข้อความสถานะใต้บัตร
+  const statusMessage = canRedeem
+    ? `🎉 สะสมครบแล้ว! กดปุ่มด้านล่างเพื่อแลกคูปองส่วนลด 100 บาท`
+    : `สะสมอีก ${remaining} ดวง เพื่อแลกคูปองส่วนลด 100 บาท`;
+
+  const bodyContents = [
+    {
+      type: "text",
+      text: "บัตรสะสมแสตมป์",
+      size: "xs",
+      color: "#A89A8F",
+      weight: "bold",
+    },
+    {
+      type: "box",
+      layout: "baseline",
+      margin: "xs",
+      contents: [
+        {
+          type: "text",
+          text: `${points}`,
+          size: "3xl",
+          weight: "bold",
+          color: "#83695B",
+          flex: 0,
+        },
+        {
+          type: "text",
+          text: ` / ${STAMP_GOAL} ดวง`,
+          size: "md",
+          color: "#A89A8F",
+          margin: "sm",
+        },
+      ],
+    },
+    stampRow(row1),
+    stampRow(row2),
+    {
+      type: "separator",
+      margin: "xl",
+      color: "#EFEBE7",
+    },
+    {
+      type: "text",
+      text: statusMessage,
+      size: "sm",
+      color: canRedeem ? "#B9770E" : "#8A7B70",
+      weight: canRedeem ? "bold" : "regular",
+      wrap: true,
+      margin: "lg",
+    },
+  ];
+
+  // แสดงจำนวนคูปองที่ถืออยู่ (ถ้ามี)
+  if (coupons > 0) {
+    bodyContents.push({
+      type: "box",
+      layout: "vertical",
+      margin: "md",
+      backgroundColor: "#FCF3CF",
+      paddingAll: "10px",
+      cornerRadius: "8px",
+      contents: [
+        {
+          type: "text",
+          text: `🎁 คูปองส่วนลดที่ถืออยู่: ${coupons} ใบ`,
+          size: "sm",
+          weight: "bold",
+          color: "#B9770E",
+          wrap: true,
+        },
+        {
+          type: "text",
+          text: "ใช้เป็นส่วนลดได้ตอนจองคิวครั้งถัดไป",
+          size: "xxs",
+          color: "#9C7A1E",
+          margin: "xs",
+        },
+      ],
+    });
+  }
+
+  const flexContents = {
+    type: "bubble",
+    header: {
+      type: "box",
+      layout: "vertical",
+      backgroundColor: "#83695B",
+      paddingAll: "16px",
+      contents: [
+        {
+          type: "text",
+          text: "FITCHECK LAUNDRY",
+          color: "#FFFFFF",
+          size: "sm",
+          weight: "bold",
+        },
+        {
+          type: "text",
+          text: customer.displayName || "ลูกค้า",
+          color: "#E8DDD5",
+          size: "xs",
+          margin: "xs",
+        },
+      ],
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "18px",
+      contents: bodyContents,
+    },
+  };
+
+  // ปุ่มแลกคูปอง แสดงเฉพาะตอนสะสมครบ
+  if (canRedeem) {
+    flexContents.footer = {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "12px",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#83695B",
+          height: "sm",
+          action: {
+            type: "postback",
+            label: "🎁 แลกคูปองส่วนลด 100 บาท",
+            data: "action=redeem_coupon",
+            displayText: "แลกคูปองส่วนลด",
+          },
+        },
+      ],
+    };
+  }
+
+  return {
+    type: "flex",
+    altText: `บัตรสะสมแสตมป์: ${points}/${STAMP_GOAL} ดวง`,
+    contents: flexContents,
+  };
+}
+
+// ส่งการ์ดบัตรสะสมให้ลูกค้า
+async function sendRewardCard(customerId, replyToken = null) {
+  const customer = await dbQuery.get(
+    "SELECT id, displayName, points, couponCount FROM customers WHERE id = ?",
+    [customerId],
+  );
+
+  if (!customer) {
+    const notFound = {
+      type: "text",
+      text: "ยังไม่พบข้อมูลสมาชิกของคุณ กรุณาเริ่มใช้บริการผ่านเมนูจองคิวก่อนนะครับ",
+    };
+    if (replyToken) await lineClient.replyMessage(replyToken, notFound);
+    else await lineClient.pushMessage(customerId, notFound);
+    return;
+  }
+
+  const message = buildRewardCardFlex(customer);
+
+  try {
+    if (customerId.startsWith("MOCK") || !hasCredentials) {
+      console.log(
+        `[MOCK LINE PUSH REWARD CARD] To: ${customerId}`,
+        JSON.stringify(message, null, 2),
+      );
+      return;
+    }
+
+    if (replyToken) {
+      await lineClient.replyMessage(replyToken, message);
+      console.log(`[LINE] Replying reward card to user ${customerId}`);
+    } else {
+      await lineClient.pushMessage(customerId, message);
+      console.log(`[LINE] Pushing reward card to user ${customerId}`);
+    }
+  } catch (err) {
+    console.error("Error sending reward card via LINE:", err);
+  }
+}
+
+// ----------------------------------------------------
+// 6. Dialogflow Fulfillment Webhook
+// ----------------------------------------------------
+// Dialogflow ยังคงเป็นเจ้าของ Webhook URL ของ LINE เหมือนเดิม
+// Intent ที่เปิด "Enable webhook call for this intent" จะยิงเข้ามาที่นี่
+// เพื่อดึงข้อมูลจริงจากฐานข้อมูล แล้วส่งกลับไปให้ Dialogflow ตอบผู้ใช้
+app.post("/dialogflow-webhook", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const queryResult = body.queryResult || {};
+    const intentName = queryResult.intent?.displayName || "(unknown)";
+
+    // ดึง LINE userId + replyToken ออกจาก payload ที่ Dialogflow แนบมาจาก LINE
+    const linePayload = body.originalDetectIntentRequest?.payload?.data || {};
+    const userId = linePayload.source?.userId;
+    const replyToken = linePayload.replyToken;
+
+    console.log(
+      `[Dialogflow] Intent: "${intentName}" | userId: ${userId || "N/A"}`,
+    );
+
+    // ตอบเป็นข้อความธรรมดา (ใช้กับกรณี error / ไม่มีออเดอร์)
+    const reply = (text) => res.json({ fulfillmentText: text });
+
+    // ส่ง Flex เองผ่าน LINE Messaging API แทนการฝากผ่าน Dialogflow
+    // เพราะ Dialogflow LINE integration ไม่รองรับ Flex Message
+    // ใช้ replyToken ก่อน (ไม่กินโควตาข้อความ) ถ้าไม่มีค่อย push
+    // แล้วตอบ Dialogflow ด้วย response ว่าง เพื่อไม่ให้มีข้อความซ้อนกัน
+    const sendFlexDirect = async (order) => {
+      await sendStatusFlexMessage(userId, order, replyToken || null);
+      return res.json({ fulfillmentMessages: [] });
+    };
+
+    if (!userId) {
+      return reply(
+        "ขออภัยครับ ระบบไม่สามารถระบุตัวตนของคุณได้ กรุณาทักผ่านแอป LINE อีกครั้งนะครับ",
+      );
+    }
+
+    // intent บัตรสะสมแสตมป์ — ส่งการ์ด reward card
+    const rewardIntents = ["แสตมป์", "บัตรสะสม", "สะสมแต้ม", "RewardCard"];
+    const isRewardIntent = rewardIntents.some((name) =>
+      intentName.includes(name),
+    );
+
+    if (isRewardIntent) {
+      console.log(`[Dialogflow] Sending reward card to ${userId}`);
+      await sendRewardCard(userId, replyToken || null);
+      return res.json({ fulfillmentMessages: [] });
+    }
+
+    const lastOrder = await dbQuery.get(
+      "SELECT * FROM orders WHERE customerId = ? ORDER BY createdAt DESC LIMIT 1",
+      [userId],
+    );
+
+    if (!lastOrder) {
+      return reply(
+        "คุณยังไม่มีออเดอร์ในระบบ ณ ขณะนี้ สะดวกจองคิวซักรีดผ่านเมนูด้านล่างได้ตลอดเวลาเลยนะครับ",
+      );
+    }
+
+    lastOrder.items = await dbQuery.all(
+      "SELECT * FROM order_items WHERE orderId = ?",
+      [lastOrder.id],
+    );
+
+    console.log(
+      `[Dialogflow] Sending Flex directly for order ${lastOrder.id} (${replyToken ? "reply" : "push"})`,
+    );
+    return await sendFlexDirect(lastOrder);
+  } catch (error) {
+    console.error("Error handling Dialogflow fulfillment:", error);
+    return res.json({
+      fulfillmentText:
+        "ขออภัยครับ ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้งนะครับ",
+    });
+  }
+});
 
 // Start Server
 app.listen(PORT, () => {

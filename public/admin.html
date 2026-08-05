@@ -139,11 +139,40 @@
       background-color: #ECEFF1;
       border-radius: var(--radius);
       padding: 16px;
-      min-height: 500px;
+      max-height: calc(100vh - 220px);
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .column-content {
+      flex: 1;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 14px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+      padding-right: 4px;
+      margin-top: 10px;
+    }
+
+    /* Custom Custom Scrollbar for Kanban Columns */
+    .column-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .column-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 10px;
+    }
+
+    .column-content::-webkit-scrollbar-thumb {
+      background: rgba(131, 105, 91, 0.3);
+      border-radius: 10px;
+    }
+
+    .column-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(131, 105, 91, 0.6);
     }
 
     .column-header {
