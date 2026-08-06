@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Fit Check Laundry</title>
   <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,6 +40,10 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    html, body {
+      touch-action: manipulation;
     }
 
     body {
@@ -743,7 +747,10 @@
   <div class="app-container">
 
     <!-- Profile Banner -->
-    <header>
+    <header style="position: relative;">
+      <a href="admin.html" title="เข้าสู่ระบบ Admin" style="position: absolute; top: 16px; right: 20px; background: rgba(255, 255, 255, 0.25); color: #FFFFFF; text-decoration: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s ease;">
+        <span>🔑 Admin</span>
+      </a>
       <div class="header-content">
         <div class="profile-card">
           <img id="user-avatar" class="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png"
@@ -755,8 +762,8 @@
               🌟 แสตมป์สะสม: <span id="user-points">0</span> ดวง
             </div>
             <div class="profile-status">ยินดีต้อนรับสู่ Fitcheck Laundry</div>
-            </div>
-            </div>
+          </div>
+        </div>
       </div>
     </header>
 

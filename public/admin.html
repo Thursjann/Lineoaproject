@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Dashboard - ระบบจัดการร้านซักรีด Fitcheck Laundry</title>
   <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +12,10 @@
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   
   <style>
+    html, body {
+      touch-action: manipulation;
+    }
+
     :root {
       --font-heading: 'Outfit', 'Prompt', sans-serif;
       --font-body: 'Inter', 'Prompt', sans-serif;
@@ -94,42 +98,28 @@
       background-color: rgba(255, 255, 255, 0.3);
     }
 
-    /* Kanban Board Layout */
+    /* Kanban Board Layout (Full Width Grid) */
     .kanban-board {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 20px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
       align-items: start;
+      width: 100%;
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 1300px) {
       .kanban-board {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 900px) {
       .kanban-board {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      .header-actions {
-        width: 100%;
-        justify-content: space-between;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 640px) {
-      body {
-        padding: 12px;
-      }
-      header {
-        padding: 16px 20px;
-      }
       .kanban-board {
         grid-template-columns: 1fr;
       }
@@ -138,27 +128,28 @@
     .kanban-column {
       background-color: #ECEFF1;
       border-radius: var(--radius);
-      padding: 16px;
-      max-height: calc(100vh - 220px);
-      min-height: 520px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+      width: 100%;
+      min-width: 0;
     }
 
     .column-content {
       flex: 1;
-      overflow-y: auto;
+      overflow-x: auto;
+      overflow-y: hidden;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 14px;
-      padding-right: 4px;
+      padding-bottom: 8px;
       margin-top: 10px;
+      align-items: stretch;
     }
 
-    /* Custom Custom Scrollbar for Kanban Columns */
+    /* Custom Horizontal Scrollbar for Orders inside Kanban Columns */
     .column-content::-webkit-scrollbar {
-      width: 6px;
+      height: 6px;
     }
 
     .column-content::-webkit-scrollbar-track {
@@ -167,12 +158,12 @@
     }
 
     .column-content::-webkit-scrollbar-thumb {
-      background: rgba(131, 105, 91, 0.3);
+      background: rgba(131, 105, 91, 0.4);
       border-radius: 10px;
     }
 
     .column-content::-webkit-scrollbar-thumb:hover {
-      background: rgba(131, 105, 91, 0.6);
+      background: rgba(131, 105, 91, 0.7);
     }
 
     .column-header {
@@ -200,6 +191,38 @@
       font-size: 12px;
     }
 
+    .column-nav-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-scroll-arrow {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .btn-scroll-arrow:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    .btn-scroll-arrow:active {
+      transform: scale(0.92);
+    }
+
     /* Order Cards */
     .order-card {
       background-color: var(--card-bg);
@@ -211,6 +234,37 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-width: 240px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    /* Admin Order Items Max Height & Custom Scrollbar */
+    .admin-order-items-scroll {
+      max-height: 160px;
+      overflow-y: auto;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .admin-order-items-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .admin-order-items-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 10px;
+    }
+
+    .admin-order-items-scroll::-webkit-scrollbar-thumb {
+      background: rgba(131, 105, 91, 0.4);
+      border-radius: 10px;
+    }
+
+    .admin-order-items-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(131, 105, 91, 0.7);
     }
 
     .order-card:hover {
@@ -259,14 +313,22 @@
     .detail-row {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
     }
 
     .detail-label {
       color: var(--text-muted);
+      flex: 1;
+      word-break: break-word;
     }
 
     .detail-val {
       font-weight: 500;
+      white-space: nowrap;
+      text-align: right;
+      flex-shrink: 0;
     }
 
     .location-link {
@@ -283,21 +345,28 @@
     }
 
     /* Buttons */
+    .card-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+
     .btn-action {
-      width: 100%;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: inherit;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       color: #FFFFFF;
       transition: filter 0.2s ease;
-      display: flex;
-      justify-content: center;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      white-space: nowrap;
     }
 
     .btn-action:hover {
@@ -310,12 +379,26 @@
     
     .card-footer-actions {
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       margin-top: 10px;
       border-top: 1px dashed var(--border);
       padding-top: 10px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .card-footer-actions-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-footer-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     
     .btn-card-util {
@@ -328,6 +411,7 @@
       cursor: pointer;
       color: #FFFFFF;
       transition: filter 0.2s ease;
+      white-space: nowrap;
     }
     
     .btn-card-util:hover {
@@ -376,7 +460,7 @@
       background-color: #FFFFFF;
     }
 
-    /* Modal Overlay styling */
+    /* Modal Overlay styling & Scroll Fix */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -387,6 +471,7 @@
       align-items: center;
       padding: 20px;
       backdrop-filter: blur(4px);
+      overflow-y: auto;
     }
 
     .modal-container {
@@ -394,7 +479,9 @@
       padding: 24px;
       border-radius: var(--radius);
       width: 100%;
-      max-width: 440px;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       display: flex;
       flex-direction: column;
@@ -534,8 +621,14 @@
     <!-- 1. รอรับผ้า -->
     <div class="kanban-column" data-aos="fade-up" data-aos-delay="100">
       <div class="column-header pending">
-        <span>รอรับผ้า (Pending)</span>
-        <span id="count-pending" class="card-count">0</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>รอรับผ้า (Pending)</span>
+          <span id="count-pending" class="card-count">0</span>
+        </div>
+        <div class="column-nav-btns">
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-pending', -300)" title="เลื่อนซ้าย">◀</button>
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-pending', 300)" title="เลื่อนขวา">▶</button>
+        </div>
       </div>
       <div id="col-pending" class="column-content">
         <!-- Injected dynamic cards -->
@@ -545,8 +638,14 @@
     <!-- 2. รับผ้าแล้ว -->
     <div class="kanban-column" data-aos="fade-up" data-aos-delay="150">
       <div class="column-header picked_up">
-        <span>รับผ้าแล้ว (Picked Up)</span>
-        <span id="count-picked_up" class="card-count">0</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>รับผ้าแล้ว (Picked Up)</span>
+          <span id="count-picked_up" class="card-count">0</span>
+        </div>
+        <div class="column-nav-btns">
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-picked_up', -300)" title="เลื่อนซ้าย">◀</button>
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-picked_up', 300)" title="เลื่อนขวา">▶</button>
+        </div>
       </div>
       <div id="col-picked_up" class="column-content">
         <!-- Injected dynamic cards -->
@@ -556,8 +655,14 @@
     <!-- 3. กำลังซัก -->
     <div class="kanban-column" data-aos="fade-up" data-aos-delay="200">
       <div class="column-header washing">
-        <span>กำลังซัก (Washing)</span>
-        <span id="count-washing" class="card-count">0</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>กำลังซัก (Washing)</span>
+          <span id="count-washing" class="card-count">0</span>
+        </div>
+        <div class="column-nav-btns">
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-washing', -300)" title="เลื่อนซ้าย">◀</button>
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-washing', 300)" title="เลื่อนขวา">▶</button>
+        </div>
       </div>
       <div id="col-washing" class="column-content">
         <!-- Injected dynamic cards -->
@@ -567,8 +672,14 @@
     <!-- 4. เสร็จสิ้น -->
     <div class="kanban-column" data-aos="fade-up" data-aos-delay="250">
       <div class="column-header completed">
-        <span>ซักเสร็จสิ้น (Completed)</span>
-        <span id="count-completed" class="card-count">0</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>ซักเสร็จสิ้น (Completed)</span>
+          <span id="count-completed" class="card-count">0</span>
+        </div>
+        <div class="column-nav-btns">
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-completed', -300)" title="เลื่อนซ้าย">◀</button>
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-completed', 300)" title="เลื่อนขวา">▶</button>
+        </div>
       </div>
       <div id="col-completed" class="column-content">
         <!-- Injected dynamic cards -->
@@ -578,8 +689,14 @@
     <!-- 5. จัดส่งแล้ว -->
     <div class="kanban-column" data-aos="fade-up" data-aos-delay="300">
       <div class="column-header delivered">
-        <span>จัดส่งแล้ว (Delivered)</span>
-        <span id="count-delivered" class="card-count">0</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span>จัดส่งแล้ว (Delivered)</span>
+          <span id="count-delivered" class="card-count">0</span>
+        </div>
+        <div class="column-nav-btns">
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-delivered', -300)" title="เลื่อนซ้าย">◀</button>
+          <button type="button" class="btn-scroll-arrow" onclick="scrollColumn('col-delivered', 300)" title="เลื่อนขวา">▶</button>
+        </div>
       </div>
       <div id="col-delivered" class="column-content">
         <!-- Injected dynamic cards -->
@@ -589,11 +706,11 @@
   </div>
 
   <!-- EDIT MODAL WINDOW (One-to-Many updates) -->
-  <div id="edit-modal" class="modal-overlay">
-    <div class="modal-container">
-      <h3 style="font-weight: 600; font-size: 18px; color: var(--text-main); display:flex; justify-content:space-between; align-items:center;">
-        <span>แก้ไขรายละเอียดออเดอร์</span>
-        <button onclick="closeEditModal()" style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;">&times;</button>
+  <div id="edit-modal" class="modal-overlay" onclick="if(event.target === this) closeEditModal()">
+    <div class="modal-container" onclick="event.stopPropagation()">
+      <h3 style="font-weight: 600; font-size: 18px; color: var(--text-main); display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+        <span>✏️ แก้ไขรายละเอียดออเดอร์</span>
+        <button type="button" onclick="closeEditModal()" style="background:#F2F4F4; border:none; color:var(--text-main); font-size:18px; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold;">&times;</button>
       </h3>
       <input type="hidden" id="edit-order-id">
       

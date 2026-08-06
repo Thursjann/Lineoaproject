@@ -2,7 +2,7 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>เช็คสถานะออเดอร์ - Fitcheck Laundry</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,6 +12,9 @@
     />
 
     <style>
+      html, body {
+        touch-action: manipulation;
+      }
       :root {
         --font-heading: "Outfit", "Prompt", sans-serif;
         --font-body: "Inter", "Prompt", sans-serif;

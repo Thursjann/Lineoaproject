@@ -122,8 +122,8 @@ async function fetchAndRenderOrders() {
         
         const customerAvatar = order.pictureUrl || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
-        // Format items list inside the card
-        const itemsHtml = order.items && order.items.length > 0
+        // Format items list inside the card with scrollbar wrapper
+        const itemsListInner = order.items && order.items.length > 0
           ? order.items.map(item => `
               <div class="detail-row">
                 <span class="detail-label">${item.serviceType}</span>
@@ -131,6 +131,8 @@ async function fetchAndRenderOrders() {
               </div>
             `).join('')
           : '<div style="color:var(--danger)">ไม่มีรายการผ้า</div>';
+
+        const itemsHtml = `<div class="admin-order-items-scroll">${itemsListInner}</div>`;
 
         // Prepare actions based on status column
         let actionButtons = '';
@@ -231,9 +233,11 @@ async function fetchAndRenderOrders() {
           </div>
 
           <div class="card-footer-actions">
-            <button class="btn-card-util btn-edit" onclick="openEditModal('${order.id}', '${order.deliveryDateTime}', '${encodedItems}')">แก้ไข</button>
-            <button class="btn-card-util btn-delete" onclick="deleteOrder('${order.id}')">ลบ</button>
-            <div style="flex:1; text-align:right;">
+            <div class="card-footer-actions-left">
+              <button class="btn-card-util btn-edit" onclick="openEditModal('${order.id}', '${order.deliveryDateTime}', '${encodedItems}')">แก้ไข</button>
+              <button class="btn-card-util btn-delete" onclick="deleteOrder('${order.id}')">ลบ</button>
+            </div>
+            <div class="card-footer-actions-right">
               ${actionButtons}
             </div>
           </div>
@@ -490,4 +494,14 @@ window.sendBroadcastPromotion = async function() {
     console.error('Broadcast error:', error);
     alert('ไม่สามารถส่งบรอดแคสต์ได้ในขณะนี้');
   }
+};
+
+// Smooth Scroll helper for Kanban Columns (Button Arrow Navigation)
+window.scrollColumn = function(columnId, distance) {
+  const container = document.getElementById(columnId);
+  if (!container) return;
+  container.scrollBy({
+    left: distance,
+    behavior: 'smooth'
+  });
 };
