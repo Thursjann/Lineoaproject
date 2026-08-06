@@ -1,489 +1,505 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>เช็คสถานะออเดอร์ - Fitcheck Laundry</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เช็คสถานะออเดอร์ - Fitcheck Laundry</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-  <style>
-    :root {
-      --font-heading: 'Outfit', 'Prompt', sans-serif;
-      --font-body: 'Inter', 'Prompt', sans-serif;
-      --primary: #83695B;
-      --primary-hover: #6D564A;
-      --card-bg: #FFFFFF;
-      --text-main: #3D3229;
-      --text-muted: #8A7B70;
-      --border: #E8E0D9;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: var(--font-body);
-      color: var(--text-main);
-      background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.94)), url('laundry-bg.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      min-height: 100vh;
-      padding: 0 0 40px;
-    }
-
-    header {
-      background: linear-gradient(135deg, #846452, #B58A75);
-      color: #fff;
-      padding: 28px 20px 24px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(131, 105, 91, 0.25);
-    }
-
-    header h1 {
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    header p {
-      font-size: 0.875rem;
-      opacity: 0.9;
-    }
-
-    .container {
-      max-width: 560px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
-
-    /* ---------- states ---------- */
-    .state-box {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 40px 24px;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-    }
-
-    .state-box .icon {
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-    }
-
-    .state-box p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      margin: 0 auto 16px;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
+    <style>
+      :root {
+        --font-heading: "Outfit", "Prompt", sans-serif;
+        --font-body: "Inter", "Prompt", sans-serif;
+        --primary: #83695b;
+        --primary-hover: #6d564a;
+        --card-bg: #ffffff;
+        --text-main: #3d3229;
+        --text-muted: #8a7b70;
+        --border: #e8e0d9;
       }
-    }
 
-    /* ---------- manual lookup ---------- */
-    .lookup {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-      margin-bottom: 20px;
-    }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    .lookup h2 {
-      font-family: var(--font-heading);
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-    }
+      body {
+        font-family: var(--font-body);
+        color: var(--text-main);
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.94)),
+          url("laundry-bg.jpg");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        padding: 0 0 40px;
+      }
 
-    .lookup p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-    }
+      header {
+        background: linear-gradient(135deg, #846452, #b58a75);
+        color: #fff;
+        padding: 28px 20px 24px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(131, 105, 91, 0.25);
+      }
 
-    .lookup-row {
-      display: flex;
-      gap: 8px;
-    }
+      header h1 {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
 
-    .lookup input {
-      flex: 1;
-      padding: 12px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      min-width: 0;
-    }
+      header p {
+        font-size: 0.875rem;
+        opacity: 0.9;
+      }
 
-    .lookup input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
+      .container {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
 
-    .lookup button {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+      /* ---------- states ---------- */
+      .state-box {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 40px 24px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      }
 
-    .lookup button:hover {
-      background: var(--primary-hover);
-    }
+      .state-box .icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+      }
 
-    .lookup button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+      .state-box p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
 
-    .error-msg {
-      color: #C0392B;
-      font-size: 0.85rem;
-      margin-top: 10px;
-    }
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        animation: spin 0.8s linear infinite;
+      }
 
-    /* ---------- order card ---------- */
-    .order-card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-      margin-bottom: 18px;
-    }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-    .order-head {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+      /* ---------- manual lookup ---------- */
+      .lookup {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        margin-bottom: 20px;
+      }
 
-    .order-id {
-      font-family: var(--font-heading);
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
+      .lookup h2 {
+        font-family: var(--font-heading);
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+      }
 
-    .badge {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #fff;
-      white-space: nowrap;
-    }
+      .lookup p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
 
-    /* ---------- progress tracker ---------- */
-    .tracker {
-      padding: 24px 20px 8px;
-    }
+      .lookup-row {
+        display: flex;
+        gap: 8px;
+      }
 
-    .step {
-      display: flex;
-      gap: 14px;
-      position: relative;
-      padding-bottom: 22px;
-    }
+      .lookup input {
+        flex: 1;
+        padding: 12px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        min-width: 0;
+      }
 
-    .step:last-child {
-      padding-bottom: 0;
-    }
+      .lookup input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
 
-    .step::before {
-      content: '';
-      position: absolute;
-      left: 13px;
-      top: 28px;
-      bottom: 0;
-      width: 2px;
-      background: var(--border);
-    }
+      .lookup button {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
 
-    .step:last-child::before {
-      display: none;
-    }
+      .lookup button:hover {
+        background: var(--primary-hover);
+      }
 
-    .step.done::before {
-      background: #2ECC71;
-    }
+      .lookup button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
 
-    .dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #F0EBE6;
-      border: 2px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      flex-shrink: 0;
-      z-index: 1;
-    }
+      .error-msg {
+        color: #c0392b;
+        font-size: 0.85rem;
+        margin-top: 10px;
+      }
 
-    .step.done .dot {
-      background: #2ECC71;
-      border-color: #2ECC71;
-      color: #fff;
-    }
+      /* ---------- order card ---------- */
+      .order-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        margin-bottom: 18px;
+      }
 
-    .step.current .dot {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
-      box-shadow: 0 0 0 4px rgba(131, 105, 91, 0.18);
-    }
+      .order-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
 
-    .step-text {
-      padding-top: 3px;
-    }
+      .order-id {
+        font-family: var(--font-heading);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
 
-    .step-title {
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
+      .badge {
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+      }
 
-    .step.done .step-title,
-    .step.current .step-title {
-      color: var(--text-main);
-    }
+      /* ---------- progress tracker ---------- */
+      .tracker {
+        padding: 24px 20px 8px;
+      }
 
-    .step-desc {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 3px;
-      line-height: 1.5;
-    }
+      .step {
+        display: flex;
+        gap: 14px;
+        position: relative;
+        padding-bottom: 22px;
+      }
 
-    /* ---------- details ---------- */
-    .details {
-      padding: 18px 20px 20px;
-      border-top: 1px solid var(--border);
-    }
+      .step:last-child {
+        padding-bottom: 0;
+      }
 
-    .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 0.88rem;
-      padding: 5px 0;
-    }
+      .step::before {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: 28px;
+        bottom: 0;
+        width: 2px;
+        background: var(--border);
+      }
 
-    .row .label {
-      color: var(--text-muted);
-    }
+      .step:last-child::before {
+        display: none;
+      }
 
-    .row .value {
-      font-weight: 500;
-      text-align: right;
-    }
+      .step.done::before {
+        background: #2ecc71;
+      }
 
-    .items {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px dashed var(--border);
-    }
+      .dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #f0ebe6;
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        z-index: 1;
+      }
 
-    .total {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-      font-size: 1rem;
-      font-weight: 700;
-    }
+      .step.done .dot {
+        background: #2ecc71;
+        border-color: #2ecc71;
+        color: #fff;
+      }
 
-    .total .value {
-      color: var(--primary);
-      font-weight: 700;
-    }
+      .step.current .dot {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(131, 105, 91, 0.18);
+      }
 
-    .discount .value {
-      color: #E74C3C;
-    }
+      .step-text {
+        padding-top: 3px;
+      }
 
-    .stamp {
-      margin: 0 20px 20px;
-      background: #FCF3CF;
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 0.85rem;
-      color: #B9770E;
-      font-weight: 600;
-    }
+      .step-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
 
-    .section-label {
-      font-family: var(--font-heading);
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin: 26px 0 12px;
-    }
+      .step.done .step-title,
+      .step.current .step-title {
+        color: var(--text-main);
+      }
 
-    .refresh {
-      display: block;
-      width: 100%;
-      background: transparent;
-      border: 1.5px solid var(--border);
-      color: var(--text-muted);
-      border-radius: 10px;
-      padding: 12px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      cursor: pointer;
-      margin-top: 6px;
-    }
+      .step-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 3px;
+        line-height: 1.5;
+      }
 
-    .refresh:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-  </style>
-</head>
+      /* ---------- details ---------- */
+      .details {
+        padding: 18px 20px 20px;
+        border-top: 1px solid var(--border);
+      }
 
-<body>
-  <header>
-    <h1>เช็คสถานะออเดอร์</h1>
-    <p>Fitcheck Laundry</p>
-  </header>
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.88rem;
+        padding: 5px 0;
+      }
 
-  <div class="container">
-    <!-- Loading -->
-    <div id="loading" class="state-box">
-      <div class="spinner"></div>
-      <p>กำลังโหลดข้อมูล...</p>
-    </div>
+      .row .label {
+        color: var(--text-muted);
+      }
 
-    <!-- Manual lookup (shown when opened outside LINE) -->
-    <div id="lookup" class="lookup" style="display:none">
-      <h2>ค้นหาด้วยเลขออเดอร์</h2>
-      <p>กรอกเลขออเดอร์ที่ได้รับตอนสั่งซัก เช่น ORD-96263</p>
-      <div class="lookup-row">
-        <input type="text" id="orderInput" placeholder="ORD-xxxxx" autocomplete="off">
-        <button id="lookupBtn">ค้นหา</button>
+      .row .value {
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .items {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border);
+      }
+
+      .total {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 1rem;
+        font-weight: 700;
+      }
+
+      .total .value {
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .discount .value {
+        color: #e74c3c;
+      }
+
+      .stamp {
+        margin: 0 20px 20px;
+        background: #fcf3cf;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        color: #b9770e;
+        font-weight: 600;
+      }
+
+      .section-label {
+        font-family: var(--font-heading);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 26px 0 12px;
+      }
+
+      .refresh {
+        display: block;
+        width: 100%;
+        background: transparent;
+        border: 1.5px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 10px;
+        padding: 12px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+        margin-top: 6px;
+      }
+
+      .refresh:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+    </style>
+    </head>
+
+  <body>
+    <header>
+      <h1>เช็คสถานะออเดอร์</h1>
+      <p>Fitcheck Laundry</p>
+    </header>
+
+    <div class="container">
+      <!-- Loading -->
+      <div id="loading" class="state-box">
+        <div class="spinner"></div>
+        <p>กำลังโหลดข้อมูล...</p>
       </div>
-      <div id="lookupError" class="error-msg" style="display:none"></div>
-    </div>
 
-    <!-- Results -->
-    <div id="results"></div>
+      <!-- Manual lookup (shown when opened outside LINE) -->
+      <div id="lookup" class="lookup" style="display: none">
+        <h2>ค้นหาด้วยเลขออเดอร์</h2>
+        <p>กรอกเลขออเดอร์ที่ได้รับตอนสั่งซัก เช่น ORD-96263</p>
+        <div class="lookup-row">
+          <input type="text" id="orderInput" placeholder="ORD-xxxxx" autocomplete="off" />
+          <button id="lookupBtn">ค้นหา</button>
+          </div>
+        <div id="lookupError" class="error-msg" style="display: none"></div>
+        </div>
 
-    <!-- Empty / error -->
-    <div id="empty" class="state-box" style="display:none">
-      <div class="icon">📭</div>
-      <p id="emptyText">ยังไม่มีออเดอร์ในระบบ</p>
-    </div>
-  </div>
+      <!-- Results -->
+      <div id="results"></div>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    const STATUS_FLOW = ['pending', 'picked_up', 'washing', 'completed', 'delivered'];
+      <!-- Empty / error -->
+      <div id="empty" class="state-box" style="display: none">
+        <div class="icon">📭</div>
+        <p id="emptyText">ยังไม่มีออเดอร์ในระบบ</p>
+      </div>
+      </div>
 
-    const STATUS_INFO = {
-      pending: {
-        label: 'รอรับผ้า',
-        color: '#F39C12',
-        desc: 'ร้านค้าได้รับออเดอร์เรียบร้อยแล้ว กำลังจัดส่งเจ้าหน้าที่ไปรับผ้าตามพิกัดและเวลานัดหมาย'
-      },
-      picked_up: {
-        label: 'รับผ้าแล้ว',
-        color: '#3498DB',
-        desc: 'พนักงานเข้ารับตะกร้าผ้าของท่านเรียบร้อยแล้ว กำลังนำส่งไปยังโรงซัก'
-      },
-      washing: {
-        label: 'กำลังซัก',
-        color: '#9B59B6',
-        desc: 'ผ้าของคุณอยู่ในขั้นตอนกระบวนการซัก อบ และรีด อย่างสะอาดปราณีต'
-      },
-      completed: {
-        label: 'ซักเสร็จสิ้น',
-        color: '#1ABC9C',
-        desc: 'การซักเสร็จสมบูรณ์เรียบร้อยแล้ว เตรียมพร้อมทำการจัดส่งคืนลูกค้า'
-      },
-      delivered: {
-        label: 'จัดส่งแล้ว',
-        color: '#2ECC71',
-        desc: 'ร้านค้าได้ทำการจัดส่งเสื้อผ้าสะอาดคืนสู่มือคุณเรียบร้อยแล้ว ขอบคุณที่ใช้บริการครับ'
-      }
-    };
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+          const STATUS_FLOW = [
+            "pending",
+            "picked_up",
+            "washing",
+            "completed",
+            "delivered",
+          ];
 
-    const $ = (id) => document.getElementById(id);
+          const STATUS_INFO = {
+            pending: {
+            label: "รอรับผ้า",
+            color: "#F39C12",
+            desc: "ร้านค้าได้รับออเดอร์เรียบร้อยแล้ว กำลังจัดส่งเจ้าหน้าที่ไปรับผ้าตามพิกัดและเวลานัดหมาย",
+          },
+          picked_up: {
+            label: "รับผ้าแล้ว",
+            color: "#3498DB",
+            desc: "พนักงานเข้ารับตะกร้าผ้าของท่านเรียบร้อยแล้ว กำลังนำส่งไปยังโรงซัก",
+          },
+          washing: {
+            label: "กำลังซัก",
+            color: "#9B59B6",
+            desc: "ผ้าของคุณอยู่ในขั้นตอนกระบวนการซัก อบ และรีด อย่างสะอาดปราณีต",
+          },
+          completed: {
+            label: "ซักเสร็จสิ้น",
+            color: "#1ABC9C",
+            desc: "การซักเสร็จสมบูรณ์เรียบร้อยแล้ว เตรียมพร้อมทำการจัดส่งคืนลูกค้า",
+          },
+          delivered: {
+            label: "จัดส่งแล้ว",
+            color: "#2ECC71",
+            desc: "ร้านค้าได้ทำการจัดส่งเสื้อผ้าสะอาดคืนสู่มือคุณเรียบร้อยแล้ว ขอบคุณที่ใช้บริการครับ",
+          },
+        };
 
-    function show(id, on = true) {
-      const el = $(id);
-      if (el) el.style.display = on ? '' : 'none';
-    }
+          const $ = (id) => document.getElementById(id);
 
-    function esc(str) {
-      const d = document.createElement('div');
-      d.textContent = str == null ? '' : String(str);
-      return d.innerHTML;
-    }
+          function show(id, on = true) {
+            const el = $(id);
+          if (el) el.style.display = on ? "" : "none";
+        }
 
-    function fmtDate(value) {
-      if (!value) return '-';
-      const d = new Date(value);
-      if (isNaN(d)) return String(value);
-      return d.toLocaleString('th-TH', {
-        day: 'numeric', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: false
-      });
-    }
+          function esc(str) {
+          const d = document.createElement("div");
+          d.textContent = str == null ? "" : String(str);
+          return d.innerHTML;
+        }
 
-    function fmtMoney(n) {
-      const num = Number(n) || 0;
-      return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+          function fmtDate(value) {
+          if (!value) return "-";
+          const d = new Date(value);
+          if (isNaN(d)) return String(value);
+          return d.toLocaleString("th-TH", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        }
 
-    function renderTracker(status) {
-      const currentIdx = STATUS_FLOW.indexOf(status);
-      return STATUS_FLOW.map((key, i) => {
-        const info = STATUS_INFO[key];
-        let cls = '';
-        if (currentIdx > -1 && i < currentIdx) cls = 'done';
-        else if (i === currentIdx) cls = 'current';
+          function fmtMoney(n) {
+            const num = Number(n) || 0;
+          return num.toLocaleString("th-TH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
 
-        const mark = cls === 'done' ? '✓' : (cls === 'current' ? '●' : '');
-        const desc = cls === 'current'
-          ? `<div class="step-desc">${esc(info.desc)}</div>`
-          : '';
+          function renderTracker(status) {
+            const currentIdx = STATUS_FLOW.indexOf(status);
+            return STATUS_FLOW.map((key, i) => {
+              const info = STATUS_INFO[key];
+            let cls = "";
+            if (currentIdx > -1 && i < currentIdx) cls = "done";
+            else if (i === currentIdx) cls = "current";
 
-        return `
+            const mark = cls === "done" ? "✓" : cls === "current" ? "●" : "";
+            const desc =
+              cls === "current"
+                ? `<div class="step-desc">${esc(info.desc)}</div>`
+              : "";
+
+            return `
           <div class="step ${cls}">
             <div class="dot">${mark}</div>
             <div class="step-text">
@@ -491,33 +507,62 @@
               ${desc}
             </div>
           </div>`;
-      }).join('');
-    }
+          }).join("");
+        }
 
-    function renderOrder(order) {
-      const info = STATUS_INFO[order.status] || { label: order.status, color: '#7F8C8D' };
-      const items = order.items || [];
+          function renderOrder(order) {
+          const info = STATUS_INFO[order.status] || {
+            label: order.status,
+            color: "#7F8C8D",
+          };
+          const items = order.items || [];
 
-      const itemRows = items.map(it => `
+          const itemRows = items
+            .map(
+              (it) => `
         <div class="row">
           <span class="label">${esc(it.serviceType)}</span>
           <span class="value">${esc(it.itemCount)} ชิ้น · ฿ ${fmtMoney(it.price)}</span>
-        </div>`).join('');
+        </div>`,
+          )
+          .join("");
 
-      const discountRow = (order.discountApplied > 0) ? `
+          const discountRow =
+            order.discountApplied > 0
+              ? `
         <div class="row discount">
           <span class="label">ส่วนลด</span>
           <span class="value">- ฿ ${fmtMoney(order.discountApplied)}</span>
-        </div>` : '';
+        </div>`
+              : "";
 
-      const stamp = (order.status === 'delivered') ? `
-        <div class="stamp">🎉 ได้รับแสตมป์สะสมจากออเดอร์นี้แล้ว +1 ดวง</div>` : '';
+          const stamp =
+            order.status === "delivered"
+              ? `
+        <div class="stamp">🎉 ได้รับแสตมป์สะสมจากออเดอร์นี้แล้ว +1 ดวง</div>`
+              : "";
 
-      const methodLabel = order.deliveryMethod === 'dropoff' ? 'นำมาส่งเอง' : 'ให้ไปรับ';
-      const payLabel = order.paymentMethod === 'transfer' ? 'โอนเงิน' : 'เงินสด';
+          const methodLabel =
+            order.deliveryMethod === "dropoff" ? "นำมาส่งเอง" : "ให้ไปรับ";
+          const payLabel =
+            order.paymentMethod === "transfer" ? "โอนเงิน" : "เงินสด";
 
-      return `
+          const STATUS_IMAGES = {
+            pending: "src/assets/Pending.jpg",
+            picked_up: "src/assets/Picked_Up.jpg",
+            washing: "src/assets/Washing.jpg",
+            completed: "src/assets/Completed.jpg",
+            delivered: "src/assets/Delivered.jpg",
+          };
+
+          const statusImg =
+            STATUS_IMAGES[order.status] || "src/assets/Pending.jpg";
+
+          return `
         <div class="order-card">
+          <div style="width: 100%; height: 180px; overflow: hidden; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <img src="${statusImg}" alt="${esc(info.label)}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+          </div>
           <div class="order-head">
             <span class="order-id">${esc(order.id)}</span>
             <span class="badge" style="background:${info.color}">${esc(info.label)}</span>
@@ -545,132 +590,140 @@
           </div>
           ${stamp}
         </div>`;
-    }
-
-    function renderOrders(orders) {
-      show('loading', false);
-      show('empty', false);
-
-      if (!orders || orders.length === 0) {
-        $('emptyText').textContent = 'ยังไม่มีออเดอร์ในระบบ สั่งซักรีดผ่านเมนูด้านล่างได้เลยครับ';
-        show('empty', true);
-        return;
-      }
-
-      const [latest, ...past] = orders;
-      let html = renderOrder(latest);
-
-      if (past.length > 0) {
-        html += `<div class="section-label">ประวัติออเดอร์ (${past.length})</div>`;
-        html += past.map(renderOrder).join('');
-      }
-
-      html += `<button class="refresh" onclick="location.reload()">รีเฟรชข้อมูล</button>`;
-      $('results').innerHTML = html;
-    }
-
-    async function loadByUserId(userId) {
-      try {
-        const res = await fetch('/api/orders?userId=' + encodeURIComponent(userId));
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        renderOrders(await res.json());
-      } catch (err) {
-        console.error('Failed to load orders:', err);
-        show('loading', false);
-        $('emptyText').textContent = 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง';
-        show('empty', true);
-      }
-    }
-
-    async function lookupByOrderId() {
-      const raw = $('orderInput').value.trim();
-      const errBox = $('lookupError');
-      errBox.style.display = 'none';
-      $('results').innerHTML = '';
-      show('empty', false);
-
-      if (!raw) {
-        errBox.textContent = 'กรุณากรอกเลขออเดอร์';
-        errBox.style.display = '';
-        return;
-      }
-
-      const btn = $('lookupBtn');
-      btn.disabled = true;
-      btn.textContent = 'กำลังค้นหา...';
-
-      try {
-        const res = await fetch('/api/orders/' + encodeURIComponent(raw));
-        if (res.status === 404) {
-          errBox.textContent = 'ไม่พบออเดอร์นี้ในระบบ กรุณาตรวจสอบเลขออเดอร์อีกครั้ง';
-          errBox.style.display = '';
-          return;
         }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        renderOrders([await res.json()]);
-      } catch (err) {
-        console.error('Lookup failed:', err);
-        errBox.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
-        errBox.style.display = '';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'ค้นหา';
-      }
-    }
 
-    function showManualLookup() {
-      show('loading', false);
-      show('lookup', true);
-    }
+          function renderOrders(orders) {
+          show("loading", false);
+          show("empty", false);
 
-    async function init() {
-      $('lookupBtn').addEventListener('click', lookupByOrderId);
-      $('orderInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') lookupByOrderId();
-      });
-
-      // Allow deep-link: status.html?order=ORD-xxxxx
-      const params = new URLSearchParams(location.search);
-      const orderParam = params.get('order');
-      if (orderParam) {
-        showManualLookup();
-        $('orderInput').value = orderParam;
-        lookupByOrderId();
-        return;
-      }
-
-      // Try LIFF so customers opening from LINE are identified automatically
-      try {
-        const cfgRes = await fetch('/api/config');
-        const cfg = await cfgRes.json();
-        const liffId = cfg.liffId;
-
-        if (!liffId || liffId === 'MOCK_LIFF_ID' || liffId === 'YOUR_LIFF_ID') {
-          showManualLookup();
+          if (!orders || orders.length === 0) {
+          $("emptyText").textContent =
+            "ยังไม่มีออเดอร์ในระบบ สั่งซักรีดผ่านเมนูด้านล่างได้เลยครับ";
+          show("empty", true);
           return;
         }
 
-        await liff.init({ liffId });
+          const [latest, ...past] = orders;
+          let html = renderOrder(latest);
 
-        if (!liff.isLoggedIn()) {
-          if (liff.isInClient()) {
-            liff.login();
+          if (past.length > 0) {
+            html += `<div class="section-label">ประวัติออเดอร์ (${past.length})</div>`;
+          html += past.map(renderOrder).join("");
+        }
+
+          html += `<button class="refresh" onclick="location.reload()">รีเฟรชข้อมูล</button>`;
+          $("results").innerHTML = html;
+        }
+
+          async function loadByUserId(userId) {
+            try {
+            const res = await fetch(
+              "/api/orders?userId=" + encodeURIComponent(userId),
+            );
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            renderOrders(await res.json());
+          } catch (err) {
+            console.error("Failed to load orders:", err);
+            show("loading", false);
+            $("emptyText").textContent =
+              "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
+            show("empty", true);
+          }
+        }
+
+          async function lookupByOrderId() {
+          const raw = $("orderInput").value.trim();
+          const errBox = $("lookupError");
+          errBox.style.display = "none";
+          $("results").innerHTML = "";
+          show("empty", false);
+
+          if (!raw) {
+          errBox.textContent = "กรุณากรอกเลขออเดอร์";
+          errBox.style.display = "";
+          return;
+        }
+
+          const btn = $("lookupBtn");
+          btn.disabled = true;
+          btn.textContent = "กำลังค้นหา...";
+
+          try {
+          const res = await fetch("/api/orders/" + encodeURIComponent(raw));
+          if (res.status === 404) {
+            errBox.textContent =
+              "ไม่พบออเดอร์นี้ในระบบ กรุณาตรวจสอบเลขออเดอร์อีกครั้ง";
+            errBox.style.display = "";
             return;
           }
-          showManualLookup();
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          renderOrders([await res.json()]);
+        } catch (err) {
+          console.error("Lookup failed:", err);
+          errBox.textContent = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+          errBox.style.display = "";
+        } finally {
+          btn.disabled = false;
+            btn.textContent = "ค้นหา";
+          }
+        }
+
+          function showManualLookup() {
+          show("loading", false);
+          show("lookup", true);
+        }
+
+          async function init() {
+          $("lookupBtn").addEventListener("click", lookupByOrderId);
+          $("orderInput").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") lookupByOrderId();
+          });
+
+          // Allow deep-link: status.html?order=ORD-xxxxx
+          const params = new URLSearchParams(location.search);
+          const orderParam = params.get("order");
+          if (orderParam) {
+            showManualLookup();
+          $("orderInput").value = orderParam;
+          lookupByOrderId();
           return;
         }
 
-        const profile = await liff.getProfile();
-        await loadByUserId(profile.userId);
-      } catch (err) {
-        console.warn('LIFF unavailable, falling back to manual lookup:', err);
-        showManualLookup();
-      }
-    }
+          // Try LIFF so customers opening from LINE are identified automatically
+          try {
+          const cfgRes = await fetch("/api/config");
+          const cfg = await cfgRes.json();
+          const liffId = cfg.liffId;
 
-    init();
-  </script>
-</body>
+          if (
+            !liffId ||
+            liffId === "MOCK_LIFF_ID" ||
+            liffId === "YOUR_LIFF_ID"
+          ) {
+            showManualLookup();
+            return;
+          }
 
+          await liff.init({ liffId });
+
+          if (!liff.isLoggedIn()) {
+            if (liff.isInClient()) {
+              liff.login();
+              return;
+            }
+            showManualLookup();
+            return;
+          }
+
+          const profile = await liff.getProfile();
+          await loadByUserId(profile.userId);
+        } catch (err) {
+            console.warn("LIFF unavailable, falling back to manual lookup:", err);
+            showManualLookup();
+          }
+        }
+
+          init();
+        </script>
+      </body>
 </html>

@@ -824,33 +824,44 @@ async function buildStatusFlexContents(customerId, order) {
   let statusColor = "";
   let statusDescription = "";
 
+  // Public HTTPS image URLs accessible anywhere on LINE platform
+  const statusCloudImages = {
+    pending: "https://cdn.discordapp.com/attachments/1126575683032854538/1534941595516797100/Pending.jpg?ex=6a75f542&is=6a74a3c2&hm=cbc0ca61e4b9f10feb7c4e7d3375506460817b56f123169109f2501beb6e746f&",
+    picked_up: "https://cdn.discordapp.com/attachments/1126575683032854538/1534941595751813364/Picked_Up.jpg?ex=6a75f542&is=6a74a3c2&hm=c111a416748efc8955a1aeb4cafeabb82b20abd34b076ed65406825c8e2c6ea7&",
+    washing: "https://cdn.discordapp.com/attachments/1126575683032854538/1534941595974107196/Washing.jpg?ex=6a75f542&is=6a74a3c2&hm=bdff6bff86faa6005cbfc7c311e22991fa90b8cbeb752639a3c15ca8d356ca58&",
+    completed: "https://cdn.discordapp.com/attachments/1126575683032854538/1534941594996703452/Completed.jpg?ex=6a75f542&is=6a74a3c2&hm=3684828a9a702e969f460251dc0a364c98d4c965e98fb4183d3d92f3120b4367&",
+    delivered: "https://cdn.discordapp.com/attachments/1126575683032854538/1534941595269337099/Delivered.jpg?ex=6a75f542&is=6a74a3c2&hm=3de92455095fbc1aa5621b119de68a3de188e4eec2bc476aa044d88ecf7e8e83&"
+  };
+
+  const statusHeroImage = statusCloudImages[order.status] || statusCloudImages.pending;
+
   switch (order.status) {
     case "pending":
-      statusText = "รอรับผ้า (Pending)";
+      statusText = "รอรับผ้า";
       statusColor = "#F39C12";
       statusDescription =
         "ร้านค้าได้รับออเดอร์เรียบร้อยแล้ว กำลังจัดส่งเจ้าหน้าที่ไปรับผ้าตามพิกัดและเวลานัดหมาย";
       break;
     case "picked_up":
-      statusText = "รับผ้าแล้ว (Picked Up)";
+      statusText = "รับผ้าแล้ว";
       statusColor = "#3498DB";
       statusDescription =
         "พนักงานเข้ารับตะกร้าผ้าของท่านเรียบร้อยแล้ว กำลังนำส่งไปยังโรงซัก";
       break;
     case "washing":
-      statusText = "กำลังซัก (Washing)";
+      statusText = "กำลังซัก";
       statusColor = "#9B59B6";
       statusDescription =
         "ผ้าของคุณอยู่ในขั้นตอนกระบวนการซัก อบ และรีด อย่างสะอาดปราณีต";
       break;
     case "completed":
-      statusText = "ซักเสร็จสิ้น (Completed)";
+      statusText = "ซักเสร็จสิ้น";
       statusColor = "#1ABC9C";
       statusDescription =
         "การซักเสร็จสมบูรณ์เรียบร้อยแล้ว เตรียมพร้อมทำการจัดส่งคืนลูกค้า";
       break;
     case "delivered":
-      statusText = "จัดส่งแล้ว (Delivered)";
+      statusText = "จัดส่งแล้ว";
       statusColor = "#2ECC71";
       statusDescription =
         "ร้านค้าได้ทำการจัดส่งเสื้อผ้าสะอาดคืนสู่มือคุณเรียบร้อยแล้ว ขอบคุณที่ใช้บริการครับ";
@@ -970,7 +981,7 @@ async function buildStatusFlexContents(customerId, order) {
     type: "bubble",
     hero: {
       type: "image",
-      url: "https://t3.ftcdn.net/jpg/02/61/72/92/360_F_261729260_GvCuivXjo8ubRPYADGX5ITU2eKRHqV4w.jpg",
+      url: statusHeroImage,
       size: "full",
       aspectRatio: "20:13",
       aspectMode: "cover",
@@ -981,30 +992,29 @@ async function buildStatusFlexContents(customerId, order) {
       contents: [
         {
           type: "text",
-          text: "FITCHECK LAUNDRY UPDATE",
+          text: "Laundry Service Update",
           weight: "bold",
-          color: "#83695B",
-          size: "xs",
+          color: "#8E44AD",
+          size: "sm",
         },
         {
           type: "text",
           text: statusText,
           weight: "bold",
-          size: "xl",
-          margin: "sm",
+          size: "xxl",
+          margin: "md",
           color: statusColor,
         },
         {
           type: "text",
-          text: `หมายเลขคำสั่งซื้อ: ${order.id}`,
+          text: `เลขออเดอร์: ${order.id}`,
           size: "xs",
-          color: "#83695B",
+          color: "#aaaaaa",
           margin: "xs",
         },
         {
           type: "separator",
           margin: "lg",
-          color: "#EEDFD9",
         },
         {
           type: "box",
@@ -1022,18 +1032,17 @@ async function buildStatusFlexContents(customerId, order) {
                   type: "text",
                   text: "นัดหมายรับผ้า",
                   size: "sm",
-                  color: "#83695B",
+                  color: "#555555",
                   flex: 3,
                 },
                 {
                   type: "text",
                   text: dateFormatted,
                   size: "sm",
-                  color: "#43352E",
+                  color: "#111111",
                   align: "end",
                   flex: 4,
                   wrap: true,
-                  weight: "bold",
                 },
               ],
             },
@@ -1045,7 +1054,7 @@ async function buildStatusFlexContents(customerId, order) {
                   type: "text",
                   text: "การจัดส่ง",
                   size: "sm",
-                  color: "#83695B",
+                  color: "#555555",
                   flex: 3,
                 },
                 {
@@ -1055,7 +1064,7 @@ async function buildStatusFlexContents(customerId, order) {
                       ? "ลูกค้ามาส่ง/รับเอง"
                       : "ให้ร้านไปรับ/ส่งคืน",
                   size: "sm",
-                  color: "#43352E",
+                  color: "#111111",
                   align: "end",
                   flex: 4,
                 },
@@ -1069,7 +1078,7 @@ async function buildStatusFlexContents(customerId, order) {
                   type: "text",
                   text: "การชำระเงิน",
                   size: "sm",
-                  color: "#83695B",
+                  color: "#555555",
                   flex: 3,
                 },
                 {
@@ -1079,7 +1088,7 @@ async function buildStatusFlexContents(customerId, order) {
                       ? "โอนเงินผ่านธนาคาร"
                       : "เงินสด",
                   size: "sm",
-                  color: "#43352E",
+                  color: "#111111",
                   align: "end",
                   flex: 4,
                 },
@@ -1094,16 +1103,15 @@ async function buildStatusFlexContents(customerId, order) {
                   type: "text",
                   text: "ยอดรวมทั้งสิ้น",
                   size: "sm",
-                  color: "#43352E",
-                  weight: "bold",
+                  color: "#555555",
                   flex: 3,
                 },
                 {
                   type: "text",
                   text: `฿ ${order.totalPrice.toFixed(2)}`,
-                  size: "md",
+                  size: "sm",
                   weight: "bold",
-                  color: "#83695B",
+                  color: "#8E44AD",
                   align: "end",
                   flex: 4,
                 },
@@ -1115,7 +1123,6 @@ async function buildStatusFlexContents(customerId, order) {
         {
           type: "separator",
           margin: "lg",
-          color: "#EEDFD9",
         },
         {
           type: "box",
@@ -1126,7 +1133,7 @@ async function buildStatusFlexContents(customerId, order) {
               type: "text",
               text: statusDescription,
               size: "xs",
-              color: "#83695B",
+              color: "#777777",
               wrap: true,
             },
           ],
