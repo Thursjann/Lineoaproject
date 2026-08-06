@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchServiceRates();
   await fetchAndRenderOrders();
   
-  // Auto-refresh interval (polling) every 10 seconds
-  setInterval(fetchAndRenderOrders, 10000);
+  // Auto-refresh interval (polling) every 4 seconds for instant real-time sync
+  setInterval(fetchAndRenderOrders, 4000);
 });
 
 // Fetch rates once to populate Edit modal checkboxes

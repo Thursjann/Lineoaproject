@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE Laundry Service - สั่งซักรีดออนไลน์</title>
+  <title>Fit Check Laundry</title>
   <!-- Google Fonts - Outfit, Inter & Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
     :root {
       --font-heading: 'Outfit', 'Prompt', sans-serif;
       --font-body: 'Inter', 'Prompt', sans-serif;
-      
+
       /* User Specified Palette */
       --primary: #83695B;          /* Warm Cocoa Brown (Primary accent & headings) */
       --primary-hover: #6D564A;    /* Darker Cocoa */
@@ -598,7 +598,20 @@
       }
 
       .modal-container {
-        max-width: 520px;
+        max-width: 420px;
+      }
+    }
+
+    .order-item-services-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+
+    @media (min-width: 560px) {
+      .order-item-services-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
@@ -810,20 +823,41 @@
       <!-- 2. PRICING & PROMOTIONS VIEW -->
       <!-- ==================================================== -->
       <section id="page-rates" class="page-section">
-        <!-- Promotion banner cards using 4 specified colors -->
-        <div class="promo-banner" data-aos="zoom-in-up" data-aos-duration="600" style="background: linear-gradient(135deg, #ECC7D2, #E2B2C0); color: #43352E; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
-          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🔥 โปรโมชั่นซักราคาส่ง/ราคาเหมา</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">เมื่อส่งซักเสื้อผ้าตั้งแต่ 50 ชิ้นขึ้นไปใน 1 ออเดอร์ รับส่วนลดราคาส่งสุดพิเศษ 20% ทันที!</p>
+        <!-- Announcement Header Banner -->
+        <div class="promo-banner" data-aos="fade-down" data-aos-duration="600"
+          style="background: linear-gradient(135deg, #83695B, #6D564A); color: #FFFFFF; border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-md);">
+          <h3
+            style="font-weight: 800; font-size: 16px; font-family: var(--font-heading); display: flex; align-items: center; gap: 6px;">
+            📢 ข่าวสาร & โปรโมชั่นพิเศษสุดคุ้ม!
+          </h3>
+          <p style="font-size: 13px; margin-top: 6px; opacity: 0.95; line-height: 1.5;">
+            จัดหนักจัดเต็มกับโปรโมชั่นใหม่ เอาใจคนรักความสะอาด ให้คุณซักผ้าได้คุ้มค่ากว่าเดิม! ✨
+          </p>
         </div>
 
-        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="100" data-aos-duration="600" style="background: linear-gradient(135deg, #C9DEE5, #B0CFDB); color: #2C3A42; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
-          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🧺 แสตมป์สะสมแลกส่วนลด</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">ทุกการใช้บริการส่งซักผ้าเสร็จสิ้น 1 ครั้ง จะได้รับแสตมป์ 1 ดวง สะสมครบ 10 ดวง กดแลกคูปองส่วนลด 100 บาทได้ทันที</p>
+        <!-- Promo 1 -->
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="100" data-aos-duration="600"
+          style="background: linear-gradient(135deg, #ECC7D2, #E2B2C0); color: #43352E; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🎉 โปรที่ 1: ซักเยอะ คุ้มกว่า!</h3>
+          <p style="font-size: 13px; margin-top: 4px; opacity: 0.95; font-weight: 600;">ส่งซักผ้าตั้งแต่ 50 ชิ้นขึ้นไป 🔥
+            รับส่วนลดทันที 20% 🔥</p>
         </div>
 
-        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="150" data-aos-duration="600" style="background: linear-gradient(135deg, #B8B87F, #A5A56C); color: #32321C; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
-          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">🌿 สมาชิกพิเศษ Fitcheck Club</h3>
-          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95;">รับสิทธิ์ส่งซักฟรีไม่มีขั้นต่ำ พร้อมบริการน้ำยาปรับผ้านุ่มสูตรถนอมผ้าฟรีทุกออเดอร์</p>
+        <!-- Promo 2 -->
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="150" data-aos-duration="600"
+          style="background: linear-gradient(135deg, #C9DEE5, #B0CFDB); color: #2C3A42; border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 16px; font-family: var(--font-heading);">💳 โปรที่ 2: บัตรสะสมแต้ม ยิ่งซัก
+            ยิ่งลด!</h3>
+          <p style="font-size: 13px; margin-top: 4px; opacity: 0.95; font-weight: 600;">ทุกครั้งที่มาใช้บริการ รับแต้มสะสม 1
+            แต้ม 🎁 สะสมครบ 10 ครั้ง รับส่วนลดทันที 100 บาท!</p>
+        </div>
+
+        <!-- Contact Banner -->
+        <div class="promo-banner" data-aos="zoom-in-up" data-aos-delay="200" data-aos-duration="600"
+          style="background: linear-gradient(135deg, #B8B87F, #A5A56C); color: #32321C; border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
+          <h3 style="font-weight: 700; font-size: 15px; font-family: var(--font-heading);">💬 สอบถาม & ประเมินราคาด่วน</h3>
+          <p style="font-size: 12px; margin-top: 4px; opacity: 0.95; line-height: 1.4;">สนใจสอบถามรายละเอียดเพิ่มเติม
+            ประเมินราคา หรือเรียกใช้บริการ พิมพ์ตอบกลับในแชทนี้ได้เลยครับ/ค่ะ ยินดีให้บริการเสมอครับ 😊</p>
         </div>
 
         <!-- Dynamic service pricing list card -->
@@ -846,20 +880,27 @@
       <!-- 3. ORDER REGISTRATION FORM -->
       <!-- ==================================================== -->
       <section id="page-form" class="page-section">
-        <div class="card-title">
-          <span style="font-weight:600;">จองคิวรับผ้าซักรีด</span>
+        <div class="card-title" data-aos="fade-down" data-aos-duration="600"
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <button type="button" onclick="navigateToTab('page-home')"
+            style="background: rgba(131, 105, 91, 0.1); border: 1px solid var(--border); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+            ⬅ ย้อนกลับ
+          </button>
+          <span
+            style="font-weight:700; font-family: var(--font-heading); font-size: 18px; color: var(--text-main);">จองคิวรับผ้าซักรีด
+            🧺</span>
         </div>
 
         <form id="order-form" onsubmit="handleOrderSubmit(event)">
 <!-- 2. เลือกบริการ -->
-<div class="form-group">
+<div class="form-group" data-aos="fade-up" data-aos-duration="600">
   <label class="form-label">เลือกประเภทบริการ (เลือกได้หลายบริการ)</label>
   <div id="services-checkbox-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom: 12px;">
     <!-- Dynamic Checkboxes -->
   </div>
 </div>
   <!-- 1. ตัวเลือกรับส่งผ้า -->
-          <div class="form-group">
+          <div class="form-group" data-aos="fade-up" data-aos-delay="50" data-aos-duration="600">
             <label class="form-label">ตัวเลือกการรับ-ส่งผ้า</label>
             <div style="display: flex; gap: 12px; margin-bottom: 12px;">
               <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; background: #FFF; font-weight: 500; font-size:13px; margin: 0;">
@@ -873,7 +914,7 @@
             </div>
           </div>
           <!-- 3. ที่อยู่ / GPS (แสดงเมื่อเลือก pickup) -->
-          <div class="form-group" id="gps-form-group">
+          <div class="form-group" id="gps-form-group" data-aos="fade-up" data-aos-delay="100" data-aos-duration="600">
             <label class="form-label">ที่อยู่จัดส่ง / พิกัด GPS</label>
             <div class="input-row">
               <input type="text" id="gps-display" class="form-control" placeholder="ยังไม่ได้รับพิกัด" readonly required>
@@ -894,7 +935,7 @@
           </div>
 
           <!-- 4. ช่องทางชำระเงิน -->
-          <div class="form-group">
+          <div class="form-group" data-aos="fade-up" data-aos-delay="150" data-aos-duration="600">
             <label class="form-label">ช่องทางชำระเงิน</label>
             <div style="display: flex; gap: 12px; margin-bottom: 12px;">
               <label style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; background: #FFF; font-weight: 500; font-size:13px; margin: 0;">
@@ -908,7 +949,7 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" data-aos="fade-up" data-aos-delay="200" data-aos-duration="600">
             <label class="form-label" id="delivery-time-label" for="delivery-time">วันเวลาที่นัดเข้ารับผ้า</label>
             <input type="datetime-local" id="delivery-time" class="form-control" required>
           </div>
@@ -921,7 +962,7 @@
             </label>
           </div>
 
-          <div class="cost-summary">
+          <div class="cost-summary" data-aos="zoom-in" data-aos-delay="250" data-aos-duration="600">
             <div id="cost-detail-items" style="font-size:12px; color:var(--text-muted); display:flex; flex-direction:column; gap:4px; margin-bottom:8px; width:100%;">
               <!-- Dynamic discount and subtotal rows -->
             </div>
@@ -931,7 +972,8 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary" style="margin-top:24px;">
+          <button type="submit" class="btn btn-primary" style="margin-top:24px;" data-aos="fade-up" data-aos-delay="300"
+            data-aos-duration="600">
             ส่งใบจองบริการซักรีด
           </button>
         </form>

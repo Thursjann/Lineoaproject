@@ -64,6 +64,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (targetTab === "rates") {
     navigateToTab("page-rates");
   }
+
+  // Auto-refresh orders list every 5 seconds for real-time synchronization across devices
+  setInterval(() => {
+    if (userProfile) {
+      loadUserOrders();
+    }
+  }, 5000);
 });
 
 // Handle successful LIFF login
@@ -382,6 +389,7 @@ window.toggleServiceQty = function (checkbox) {
       btnPlus.style.color = "var(--text-main)";
     }
   } else {
+    qtyInput.value = 1;
     qtyInput.disabled = true;
     qtyInput.style.background = "#EEE";
     if (btnMinus) {
@@ -519,24 +527,28 @@ window.calculateEstimate = function () {
 };
 
 function setupDefaultDeliveryTime() {
-  const now = new Date();
-  now.setHours(now.getHours() + 2);
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 3);
 
-  const currentHour = now.getHours();
+  const currentHour = minDate.getHours();
   if (currentHour < 9) {
-    now.setHours(9, 0, 0, 0);
+    minDate.setHours(9, 0, 0, 0);
   } else if (currentHour >= 19) {
-    now.setDate(now.getDate() + 1);
-    now.setHours(9, 0, 0, 0);
+    minDate.setDate(minDate.getDate() + 1);
+    minDate.setHours(9, 0, 0, 0);
   }
 
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const minYear = minDate.getFullYear();
+  const minMonth = String(minDate.getMonth() + 1).padStart(2, "0");
+  const minDay = String(minDate.getDate()).padStart(2, "0");
+  const minHours = String(minDate.getHours()).padStart(2, "0");
+  const minMinutes = String(minDate.getMinutes()).padStart(2, "0");
 
-  deliveryTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  const minDateTimeString = `${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`;
+
+  // Set min attribute on date picker input so previous days (< 3 days) cannot be selected
+  deliveryTimeInput.min = minDateTimeString;
+  deliveryTimeInput.value = minDateTimeString;
 }
 
 function getLocation() {
@@ -626,6 +638,17 @@ async function handleOrderSubmit(e) {
   };
 
   const selectedDate = new Date(deliveryTimeInput.value);
+  
+  // Calculate minimum allowed date (current time + 3 days)
+  const minAllowedDate = new Date();
+  minAllowedDate.setDate(minAllowedDate.getDate() + 3);
+  minAllowedDate.setSeconds(0, 0);
+
+  if (selectedDate < minAllowedDate) {
+    alert("⚠️ กรุณานัดหมายวันเวลารับผ้าล่วงหน้าอย่างน้อย 3 วันค่ะ");
+    return;
+  }
+
   const selectedHour = selectedDate.getHours();
   const selectedMin = selectedDate.getMinutes();
   const mins = selectedHour * 60 + selectedMin;
@@ -766,12 +789,17 @@ async function loadUserOrders() {
           }
         } catch (err) { }
 
-        const itemsList =
+        const itemsListHtml =
           order.items && order.items.length > 0
             ? order.items
-              .map((item) => `${item.serviceType} (${item.itemCount} ชิ้น)`)
-              .join(", ")
-            : "ไม่ระบุรายการ";
+              .map((item) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(251, 248, 246, 0.7); border-radius: 10px; border: 1px dashed var(--border);">
+                  <span style="font-size: 13px; color: var(--text-main); font-weight: 500;">🧺 ${item.serviceType}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: var(--primary); font-family: var(--font-heading); white-space: nowrap; margin-left: 8px;">${item.itemCount} ชิ้น</span>
+                </div>
+              `)
+              .join("")
+            : "<div style='color: var(--text-muted); font-size: 13px;'>ไม่ระบุรายการ</div>";
 
         // Format short clean Order ID (e.g. ORD-12345)
         let displayOrderId = order.id;
@@ -782,42 +810,65 @@ async function loadUserOrders() {
           displayOrderId = `# ${displayOrderId.substring(0, 8)}`;
         }
 
+        // Payment Method label
+        const paymentLabel = order.paymentMethod === 'transfer' ? '💳 โอนเงิน (Transfer)' : '💵 เงินสด (Cash)';
+
+        // Show QR payment button if paymentMethod is transfer
+        let qrButtonHtml = '';
+        if (order.paymentMethod === 'transfer') {
+          qrButtonHtml = `
+            <button onclick="showPaymentQRModal(${order.totalPrice})" style="background: linear-gradient(135deg, #ECC7D2, #E2B2C0); color: #43352E; border: none; padding: 7px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); white-space: nowrap;">
+              📲 ดู QR สแกนจ่าย
+            </button>
+          `;
+        }
+
         return `
-        <div class="order-item" style="background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(156, 122, 103, 0.07); display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s ease;">
-          <!-- Header Row: Order ID & Appointment Date -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; gap: 10px;">
+        <div class="order-item" style="background: #FFFFFF; border: 1.5px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s ease; width: 100%;">
+
+          <!-- Header Row: Order ID, Date & Payment Method Badge -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed var(--border); padding-bottom: 12px; gap: 10px; width: 100%;">
             <div>
               <div style="font-size: 11px; color: var(--text-muted); font-weight: 500;">หมายเลขคำสั่งซื้อ</div>
-              <div style="font-size: 15px; font-weight: 800; color: var(--primary); font-family: var(--font-heading); margin-top: 2px;">
+              <div style="font-size: 16px; font-weight: 800; color: var(--primary); font-family: var(--font-heading); margin-top: 2px;">
                 ${displayOrderId}
               </div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 นัดหมาย:</span>
+                <b style="color: var(--text-main); font-weight: 600;">${dateString}</b>
+              </div>
             </div>
-            <div style="text-align: right;">
-              <div style="font-size: 11px; color: var(--text-muted); font-weight: 500;">วันเวลานัดหมาย</div>
-              <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-top: 2px;">
-                 ${dateString}
+
+            <div style="text-align: right; flex-shrink: 0;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--primary); background: #FBF4F6; padding: 5px 12px; border-radius: 12px; border: 1px solid var(--border);">
+                ${paymentLabel}
               </div>
             </div>
           </div>
 
-          <!-- Middle Row: Services List -->
-          <div style="padding: 2px 0;">
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">รายการบริการ</div>
-            <div style="font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.5;">
-              🧺 ${itemsList}
+          <!-- Middle Row: Services List Grid -->
+          <div style="width: 100%;">
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">รายการบริการที่สั่งซัก</div>
+            <div class="order-item-services-grid">
+              ${itemsListHtml}
             </div>
           </div>
 
-          <!-- Bottom Row: Price & Status -->
-          <div style="display: flex; justify-content: space-between; align-items: center; background-color: #FAF5EF; padding: 10px 14px; border-radius: 14px; margin-top: 2px;">
-            <div>
+          <!-- Bottom Highlight Box: Total Price & Status + QR Buttons -->
+          <div style="background-color: #FAF5EF; border: 1px solid #F2E8DF; padding: 12px 14px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap;">
+            <div style="flex-shrink: 0;">
               <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">ยอดรวมสุทธิ</span>
-              <div style="font-size: 17px; color: var(--primary); font-family: var(--font-heading); font-weight: 800; line-height: 1.1;">
+              <div style="font-size: 18px; color: var(--primary); font-family: var(--font-heading); font-weight: 800; line-height: 1.1; margin-top: 2px;">
                 ฿${order.totalPrice.toFixed(2)}
               </div>
             </div>
-            <span class="status-badge ${statusClass}" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.2px;">${statusLabel}</span>
+
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: 1;">
+              <span class="status-badge ${statusClass}" style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.2px; white-space: nowrap; text-align: center; display: inline-flex; align-items: center; justify-content: center;">${statusLabel}</span>
+              ${qrButtonHtml}
+            </div>
           </div>
+
         </div>
       `;
       })
@@ -834,4 +885,12 @@ async function loadUserOrders() {
 
 window.closePaymentModal = function () {
   document.getElementById("payment-modal").style.display = "none";
+};
+
+window.showPaymentQRModal = function (amount) {
+  document.getElementById("payment-qr").src =
+    `https://promptpay.io/${promptPayNumber}/${amount}.png`;
+  document.getElementById("payment-amount").innerText =
+    `฿ ${amount.toFixed(2)}`;
+  document.getElementById("payment-modal").style.display = "flex";
 };
