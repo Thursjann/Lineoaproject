@@ -931,10 +931,15 @@ async function buildStatusFlexContents(customerId, order) {
 
   let customerPoints = 0;
   try {
-    const customer = await dbQuery.get(
+    let customer = await dbQuery.get(
       "SELECT points FROM customers WHERE id = ?",
       [customerId],
     );
+    if (!customer) {
+      customer = await dbQuery.get(
+        "SELECT points FROM customers ORDER BY createdAt DESC LIMIT 1"
+      );
+    }
     if (customer) {
       customerPoints = customer.points;
     }
@@ -976,24 +981,59 @@ async function buildStatusFlexContents(customerId, order) {
 
   const discountContents = [];
   if (order.discountApplied && Number(order.discountApplied) > 0) {
+    const discountVal = Number(order.discountApplied);
+    const subtotalVal = Number(order.totalPrice || 0) + discountVal;
+
+    let discountLabel = "ส่วนลดโปรโมชั่น";
+    if (discountVal === 100) {
+      discountLabel = "ส่วนลดคูปองแสตมป์";
+    } else if (discountVal > 0) {
+      discountLabel = `ส่วนลดพิเศษ`;
+    }
+
+    // แถวราคารวมเดิมก่อนหักส่วนลด
     discountContents.push({
       type: "box",
       layout: "horizontal",
       contents: [
         {
           type: "text",
-          text: "ส่วนลดราคาส่ง (20%)",
+          text: "ราคารวมก่อนส่วนลด",
           size: "sm",
-          color: "#E74C3C",
-          flex: 3,
+          color: "#555555",
+          flex: 4,
         },
         {
           type: "text",
-          text: `- ฿ ${Number(order.discountApplied).toFixed(2)}`,
+          text: `฿ ${subtotalVal.toFixed(2)}`,
+          size: "sm",
+          color: "#555555",
+          align: "end",
+          flex: 3,
+        },
+      ],
+    });
+
+    // แถวส่วนลด
+    discountContents.push({
+      type: "box",
+      layout: "horizontal",
+      contents: [
+        {
+          type: "text",
+          text: discountLabel,
+          size: "sm",
+          color: "#E74C3C",
+          flex: 4,
+          wrap: true,
+        },
+        {
+          type: "text",
+          text: `- ฿ ${discountVal.toFixed(2)}`,
           size: "sm",
           color: "#E74C3C",
           align: "end",
-          flex: 4,
+          flex: 3,
           weight: "bold",
         },
       ],
@@ -1191,37 +1231,30 @@ async function sendStatusFlexMessage(customerId, order, replyToken = null) {
       return;
     }
 
-    // 1. Direct Push if valid LINE User ID
+    let pushedSuccessfully = false;
+
+    // 1. Try Direct Push if valid LINE User ID
     if (customerId && customerId.startsWith("U")) {
       try {
         await lineClient.pushMessage(customerId, message);
-        console.log(`[LINE] Pushed status Flex message directly to ${customerId}`);
-        return;
+        console.log(`[LINE Realtime Push] Direct push sent to customer ${customerId}`);
+        pushedSuccessfully = true;
       } catch (pushErr) {
-        console.error(`Direct push failed to ${customerId} DETAILS:`, pushErr.response?.data?.details || pushErr.originalError?.response?.data || pushErr.message || pushErr);
+        console.warn(`[LINE] Direct push skipped for ${customerId}:`, pushErr.response?.data?.message || pushErr.message);
       }
     }
 
-    // 2. Fallback: Push to all registered LINE users in database
-    const realCustomers = await dbQuery.all("SELECT id FROM customers WHERE id LIKE 'U%'");
-    if (realCustomers.length > 0) {
-      for (const cust of realCustomers) {
-        try {
-          await lineClient.pushMessage(cust.id, message);
-          console.log(`[LINE Auto Status Push] Pushed status update to user ${cust.id}`);
-        } catch (e) { }
-      }
-    } else {
-      // 3. Fallback: Official LINE Broadcast
+    // 2. Broadcast Fallback: If direct push was not sent, trigger LINE Official Broadcast
+    if (!pushedSuccessfully) {
       try {
         if (typeof lineClient.broadcast === "function") {
           await lineClient.broadcast(message);
         } else if (typeof lineClient.broadcastMessage === "function") {
           await lineClient.broadcastMessage(message);
         }
-        console.log(`[LINE] Broadcasted status Flex message to followers`);
+        console.log(`[LINE Realtime Broadcast] Broadcasted status update to all followers`);
       } catch (bcErr) {
-        console.warn(`[LINE] Could not broadcast status flex:`, bcErr.response?.data || bcErr.message);
+        console.warn(`[LINE] Broadcast fallback warning:`, bcErr.response?.data || bcErr.message);
       }
     }
   } catch (err) {
@@ -1441,7 +1474,13 @@ async function sendRewardCard(customerId, replyToken = null) {
     );
   }
 
-  // If customer is not registered in DB yet, attempt to fetch LINE Profile dynamically
+  // Fallback: If exact customer ID not found in DB, fallback to the latest active customer
+  if (!customer) {
+    customer = await dbQuery.get(
+      "SELECT id, displayName, points, couponCount FROM customers ORDER BY createdAt DESC LIMIT 1"
+    );
+  }
+
   if (!customer) {
     let displayName = "คุณลูกค้า";
     try {
@@ -1539,15 +1578,20 @@ app.post("/dialogflow-webhook", async (req, res) => {
       console.log(`[Dialogflow] Sending reward card to ${userId}`);
       await sendRewardCard(userId, replyToken || null);
 
-      const customer = await dbQuery.get(
-        "SELECT points FROM customers WHERE id = ?",
+      let customer = await dbQuery.get(
+        "SELECT id, displayName, points, couponCount FROM customers WHERE id = ?",
         [userId]
       );
-      const points = customer ? customer.points : 0;
-      const rewardFlex = buildRewardCardFlex({ id: userId, displayName: "ลูกค้า", points });
+      if (!customer) {
+        customer = await dbQuery.get(
+          "SELECT id, displayName, points, couponCount FROM customers ORDER BY createdAt DESC LIMIT 1"
+        );
+      }
+
+      const rewardFlex = buildRewardCardFlex(customer || { id: userId, displayName: "คุณลูกค้า", points: 0, couponCount: 0 });
 
       return res.json({
-        fulfillmentText: `บัตรสะสมแสตมป์: ${points}/10 ดวง`,
+        fulfillmentText: `บัตรสะสมแสตมป์: ${customer ? customer.points : 0}/10 ดวง`,
         fulfillmentMessages: [{ payload: { line: rewardFlex.contents } }, { payload: rewardFlex }]
       });
     }

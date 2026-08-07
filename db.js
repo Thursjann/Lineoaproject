@@ -10,33 +10,54 @@ let db = null;
 // Path to local Firebase Admin SDK JSON file
 const serviceAccountPath = path.join(__dirname, "fitcheck-laundry-firebase-adminsdk-fbsvc-939bf48b6f.json");
 
-if (fs.existsSync(serviceAccountPath) || process.env.FIREBASE_SERVICE_ACCOUNT) {
+if (fs.existsSync(serviceAccountPath) || process.env.FIREBASE_SERVICE_ACCOUNT || process.env.VERCEL) {
   try {
     let serviceAccount;
     if (fs.existsSync(serviceAccountPath)) {
       serviceAccount = require(serviceAccountPath);
-    } else {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      let rawCreds = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+      if ((rawCreds.startsWith("'") && rawCreds.endsWith("'")) || (rawCreds.startsWith('"') && rawCreds.endsWith('"'))) {
+        rawCreds = rawCreds.slice(1, -1).trim();
+      }
+
+      if (!rawCreds.startsWith("{")) {
+        try {
+          rawCreds = Buffer.from(rawCreds, "base64").toString("utf8").trim();
+        } catch (bErr) {}
+      }
+
+      try {
+        serviceAccount = JSON.parse(rawCreds);
+      } catch (pErr) {
+        const sanitized = rawCreds.replace(/\n/g, "\\n").replace(/\r/g, "");
+        serviceAccount = JSON.parse(sanitized);
+      }
+
+      if (serviceAccount && typeof serviceAccount.private_key === "string") {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
+      }
     }
 
-    if (!getApps().length) {
-      initializeApp({
-        credential: cert(serviceAccount)
-      });
+    if (!getApps().length && serviceAccount) {
+      initializeApp({ credential: cert(serviceAccount) });
     }
-    db = getFirestore();
-    db.settings({ ignoreUndefinedProperties: true });
-    useFirestore = true;
-    console.log("=======================================================");
-    console.log("🔥 Connected to Firebase Firestore Database successfully!");
-    console.log("=======================================================");
+
+    if (getApps().length) {
+      db = getFirestore();
+      try { db.settings({ ignoreUndefinedProperties: true }); } catch (sErr) {}
+      useFirestore = true;
+      console.log("=======================================================");
+      console.log("🔥 Connected to Firebase Firestore Database successfully!");
+      console.log("=======================================================");
+    }
   } catch (e) {
-    console.error("⚠️ Failed to load Firebase credentials. Falling back to local SQLite:", e.message);
+    console.error("⚠️ Failed to initialize Firebase credentials:", e.message || e);
   }
 }
 
 // ----------------------------------------------------
-// 2. Local SQLite Fallback Setup
+// Local SQLite Setup Fallback
 // ----------------------------------------------------
 let sqliteDb = null;
 if (!useFirestore) {
@@ -171,7 +192,7 @@ const dbQuery = {
       if (sql.includes("FROM orders")) {
         const snap = await db.collection("orders").orderBy("createdAt", "desc").get();
         const ordersList = snap.docs.map(doc => doc.data());
-        
+
         if (sql.includes("LEFT JOIN customers")) {
           for (let order of ordersList) {
             if (order.customerId) {

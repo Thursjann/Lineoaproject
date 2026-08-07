@@ -220,8 +220,8 @@ window.navigateToTab = function (pageId) {
 
 // Render e-Stamp Loyalty Card visual circles
 function renderStampCard(points) {
-  // Stamps are points modulo 10 (or complete stamps sheet)
-  const stampCount = points % 10;
+  // Stamps logic: If points >= 10, display 10 full stamps for redemption, otherwise points % 10
+  const stampCount = points >= 10 ? 10 : (points % 10);
   stampTextSummary.innerText = `${stampCount}/10 ดวง`;
 
   let gridHtml = "";
